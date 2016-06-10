@@ -70,7 +70,6 @@ task autonomous()
 // You must modify the code to add your own robot specific commands here.
 //
 /////////////////////////////////////////////////////////////////////////////////////////
-int potential;
 task usercontrol()
 {
 	// User control code here, inside the loop
@@ -84,6 +83,5 @@ task usercontrol()
 		motor[Lift2]= vexRT[Btn8U]*127 + vexRT[Btn8D]*-127;
 		motor[Lift3]= vexRT[Btn8U]*127 + vexRT[Btn8D]*-127;
 		motor[Lift4]= vexRT[Btn8U]*127 + vexRT[Btn8D]*-127;
-		potential = SensorValue[in1];
 	}
 }
