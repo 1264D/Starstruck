@@ -1,5 +1,6 @@
 #pragma config(I2C_Usage, I2C1, i2cSensors)
 #pragma config(Sensor, in1,    Lift,           sensorPotentiometer)
+#pragma config(Sensor, in2,    LiftTwo,        sensorPotentiometer)
 #pragma config(Sensor, I2C_1,  FrontLeft,      sensorQuadEncoderOnI2CPort,    , AutoAssign )
 #pragma config(Sensor, I2C_2,  FrontRight,     sensorQuadEncoderOnI2CPort,    , AutoAssign )
 #pragma config(Sensor, I2C_3,  BackLeft,       sensorQuadEncoderOnI2CPort,    , AutoAssign )
