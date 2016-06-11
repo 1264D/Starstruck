@@ -24,34 +24,50 @@
 #pragma userControlDuration(120)
 
 #include "Vex_Competition_Includes.c"   //Main competition background code...do not modify!
+int LiftAngle; //Requested angle
+bool AngleToggle;
 
-/////////////////////////////////////////////////////////////////////////////////////////
-//
-//                          Pre-Autonomous Functions
-//
-// You may want to perform some actions before the competition starts. Do them in the
-// following function.
-//
-/////////////////////////////////////////////////////////////////////////////////////////
+void AngleLift(){
+	if(AngleToggle == 1){
+		if((SensorValue[in1] >= LiftAngle - 5) || (SensorValue[in1] <= LiftAngle + 5)) {
+			motor[Lift1] = 0;
+			motor[Lift2] = 0;
+			AngleToggle = false;
+		}
+		if(SensorValue[in1] <= LiftAngle - 5){
+			motor[Lift1] = 0;
+			motor[Lift2] = 0;
+		}
+		if(SensorValue[in1] >= LiftAngle + 5){
+			motor[Lift1] = 0;
+			motor[Lift2] = 0;
+		}
+	}
+}
+
+void base(){
+	motor[FrontLeft] = vexRT[Ch3] + vexRT[Ch1] + vexRT[Ch4];
+	motor[FrontRight] = vexRT[Ch3] - vexRT[Ch1] - vexRT[Ch4];
+	motor[BackLeft] = vexRT[Ch3] + vexRT[Ch1] - vexRT[Ch4];
+	motor[BackRight]= vexRT[Ch3] - vexRT[Ch1] + vexRT[Ch4];
+}
+
+void lift(){
+	if(AngleToggle == false){
+		motor[Lift1]= vexRT[Btn8U]* -127 + vexRT[Btn8D]*127;
+		motor[Lift2]= vexRT[Btn8U]*-127 + vexRT[Btn8D]*127;
+	}
+}
+
+void control(){
+	base();
+	lift();
+}
 
 void pre_auton()
 {
-	// Set bStopTasksBetweenModes to false if you want to keep user created tasks running between
-	// Autonomous and Tele-Op modes. You will need to manage all user created tasks if set to false.
 	bStopTasksBetweenModes = true;
-
-	// All activities that occur before the competition starts
-	// Example: clearing encoders, setting servo positions, ...
 }
-
-/////////////////////////////////////////////////////////////////////////////////////////
-//
-//                                 Autonomous Task
-//
-// This task is used to control your robot during the autonomous phase of a VEX Competition.
-// You must modify the code to add your own robot specific commands here.
-//
-/////////////////////////////////////////////////////////////////////////////////////////
 
 task autonomous()
 {
@@ -62,24 +78,21 @@ task autonomous()
 	AutonomousCodePlaceholderForTesting();  // Remove this function call once you have "real" code.
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////
-//
-//                                 User Control Task
-//
-// This task is used to control your robot during the user control phase of a VEX Competition.
-// You must modify the code to add your own robot specific commands here.
-//
-/////////////////////////////////////////////////////////////////////////////////////////
 task usercontrol()
 {
-	// User control code here, inside the loop
+	motor[port1] = 0;
+	motor[port2] = 0;
+	motor[port3] = 0;
+	motor[port4] = 0;
+	motor[port5] = 0;
+	motor[port6] = 0;
+	motor[port7] = 0;
+	motor[port8] = 0;
+	motor[port9] = 0;
+	motor[port10] = 0;
 	while (true)
 	{
-		motor[FrontLeft] = vexRT[Ch3] + vexRT[Ch1] + vexRT[Ch4];
-		motor[FrontRight] = vexRT[Ch3] - vexRT[Ch1] - vexRT[Ch4];
-		motor[BackLeft] = vexRT[Ch3] + vexRT[Ch1] - vexRT[Ch4];
-		motor[BackRight]= vexRT[Ch3] - vexRT[Ch1] + vexRT[Ch4];
-		motor[Lift1]= vexRT[Btn8U]* -127 + vexRT[Btn8D]*127;
-		motor[Lift2]= vexRT[Btn8U]*-127 + vexRT[Btn8D]*127;
+		control();
+		AngleLift();
 	}
 }
