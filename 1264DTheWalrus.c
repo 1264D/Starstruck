@@ -7,10 +7,10 @@
 #pragma config(Motor,  port1,            ,             tmotorVex393_HBridge, openLoop)
 #pragma config(Motor,  port2,           FrontLeft,     tmotorVex393_MC29, openLoop, encoderPort, I2C_1)
 #pragma config(Motor,  port3,           FrontRight,    tmotorVex393_MC29, openLoop, encoderPort, I2C_2)
-#pragma config(Motor,  port4,           Lift1,         tmotorVex393_MC29, openLoop)
-#pragma config(Motor,  port5,           Lift2,         tmotorVex393_MC29, openLoop)
-#pragma config(Motor,  port6,           Lift3,         tmotorVex393_MC29, openLoop)
-#pragma config(Motor,  port7,           Lift4,         tmotorVex393_MC29, openLoop)
+#pragma config(Motor,  port4,            ,             tmotorVex393_MC29, openLoop)
+#pragma config(Motor,  port5,           Lift1,         tmotorVex393_MC29, openLoop)
+#pragma config(Motor,  port6,           Lift2,         tmotorVex393_MC29, openLoop)
+#pragma config(Motor,  port7,            ,             tmotorVex393_MC29, openLoop)
 #pragma config(Motor,  port8,           BackLeft,      tmotorVex393_MC29, openLoop, encoderPort, I2C_3)
 #pragma config(Motor,  port9,           BackRight,     tmotorVex393_MC29, openLoop, encoderPort, I2C_4)
 #pragma config(Motor,  port10,           ,             tmotorVex393_HBridge, openLoop)
@@ -79,9 +79,7 @@ task usercontrol()
 		motor[FrontRight] = vexRT[Ch3] - vexRT[Ch1] - vexRT[Ch4];
 		motor[BackLeft] = vexRT[Ch3] + vexRT[Ch1] - vexRT[Ch4];
 		motor[BackRight]= vexRT[Ch3] - vexRT[Ch1] + vexRT[Ch4];
-		motor[Lift1]= vexRT[Btn8U]*127 + vexRT[Btn8D]*-127;
-		motor[Lift2]= vexRT[Btn8U]*127 + vexRT[Btn8D]*-127;
-		motor[Lift3]= vexRT[Btn8U]*127 + vexRT[Btn8D]*-127;
-		motor[Lift4]= vexRT[Btn8U]*127 + vexRT[Btn8D]*-127;
+		motor[Lift1]= vexRT[Btn8U]* -127 + vexRT[Btn8D]*127;
+		motor[Lift2]= vexRT[Btn8U]*-127 + vexRT[Btn8D]*127;
 	}
 }
