@@ -46,16 +46,16 @@ void AngleLift(){
 }
 
 void base(){
-	motor[FrontLeft] = vexRT[Ch3] + vexRT[Btn5U]*127 + vexRT[Btn6U]*-127;
-	motor[FrontRight] = vexRT[Ch2] + vexRT[Btn5U]*-127 + vexRT[Btn6U]*127;
-	motor[BackLeft] = vexRT[Ch3] + vexRT[Btn5U]*-127 + vexRT[Btn6U]*127;
-	motor[BackRight]= vexRT[Ch2] + vexRT[Btn5U]*127 + vexRT[Btn6U]*-127;
+	motor[FrontLeft] = vexRT[Ch3] + vexRT[Btn5U]*-127 + vexRT[Btn6U]*127;
+	motor[FrontRight] = vexRT[Ch2] + vexRT[Btn5U]*127 + vexRT[Btn6U]*-127;
+	motor[BackLeft] = vexRT[Ch3] + vexRT[Btn5U]*127 + vexRT[Btn6U]*-127;
+	motor[BackRight]= vexRT[Ch2] + vexRT[Btn5U]*-127 + vexRT[Btn6U]*127;
 }
 
 void lift(){
 	if(AngleToggle == false){
-		motor[Lift1]= vexRT[Btn8U]* -127 + vexRT[Btn8D]*127;
-		motor[Lift2]= vexRT[Btn8U]*-127 + vexRT[Btn8D]*127;
+		motor[Lift1]= vexRT[Btn8U]*127 + vexRT[Btn8D]*-127;
+		motor[Lift2]= vexRT[Btn8U]*127 + vexRT[Btn8D]*-127;
 	}
 }
 
