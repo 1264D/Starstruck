@@ -1,5 +1,6 @@
 #pragma config(Motor,  port2,            ,             tmotorVex393_MC29, openLoop, reversed)
 #pragma config(Motor,  port3,            ,             tmotorVex393_MC29, openLoop, reversed)
+#pragma config(Motor,  port4,            ,             tmotorVex393_MC29, openLoop, reversed)
 #pragma config(Motor,  port5,            ,             tmotorVex393_MC29, openLoop)
 #pragma config(Motor,  port6,            ,             tmotorVex393_MC29, openLoop, reversed)
 #pragma config(Motor,  port8,            ,             tmotorVex393_MC29, openLoop)
@@ -8,13 +9,37 @@
 
 task main()
 {
+
+int mode;
+//Modes: 1-Arcade 2-Tank
+
+
 while (1) { //This is an omnidirectional one-joystick arcade style drive w/ bumpers for rotate
+
+mode = 2;
+
+	if (mode == 2) {
+	motor[port2] = vexRT[Ch2] + vexRT[Btn5U]*75 + vexRT[Btn6U]*-75;
+	motor[port3]= vexRT[Ch2] + vexRT[Btn5U]*-75 + vexRT[Btn6U]*75;
+	motor[port8] = vexRT[Ch3] + vexRT[Btn5U]*-75 + vexRT[Btn6U]*75;
+	motor[port9] = vexRT[Ch3] + vexRT[Btn5U]*75 + vexRT[Btn6U]*-75;
+	motor[port5]= vexRT[Btn8U]*127 + vexRT[Btn8D]*-127; //Lift Right Tower
+	motor[port6]= vexRT[Btn8U]*127 + vexRT[Btn8D]*-127; //Lift Left Tower
+	motor[port4]= vexRT[Btn7U]*127 + vexRT[Btn7D]*-127; //Conveyor
+	}
+
+	if (mode == 1)	{
 	motor[port2] = vexRT[Ch3]*0.5 + vexRT[Ch4]*-0.5 + vexRT[Btn5U]*50 + vexRT[Btn6U]*-50; //Front Right
 	motor[port3] = vexRT[Ch3]*0.5 + vexRT[Ch4]*0.5 + vexRT[Btn5U]*50 + vexRT[Btn6U]*-50;  //Back Right
 	motor[port8] = vexRT[Ch3]*0.5 + vexRT[Ch4]*0.5 + vexRT[Btn5U]*-50 + vexRT[Btn6U]*50;  //Front Left
 	motor[port9] = vexRT[Ch3]*0.5 + vexRT[Ch4]*-0.5 + vexRT[Btn5U]*-50 + vexRT[Btn6U]*50; //Back Left
 	motor[port5]= vexRT[Btn8U]*127 + vexRT[Btn8D]*-127; //Lift Right Tower
 	motor[port6]= vexRT[Btn8U]*127 + vexRT[Btn8D]*-127; //Lift Left Tower
+	motor[port4]= vexRT[Btn7U]*127 + vexRT[Btn7D]*-127; //Conveyor
+
+	}
+
+	wait1Msec(10);
 
 }
 while (0) {			//to Andrew: This is some testing code I made for single direction control
