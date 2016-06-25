@@ -20,91 +20,91 @@ task main()
 {
 
 
-int mode;
-//Modes: 1-Arcade 2-Tank
-int RightJoyM; //Main Right Y
-int RightJoyS; //Partner Right Y
-int LeftJoyM; //Main Left Y
-int LeftJoyS; //Partner Left Y
+	int mode;
+	//Modes: 1-Arcade 2-Tank
+	int RightJoyM; //Main Right Y
+	int RightJoyS; //Partner Right Y
+	int LeftJoyM; //Main Left Y
+	int LeftJoyS; //Partner Left Y
 
 
-while (1) { //This is an omnidirectional one-joystick arcade style drive w/ bumpers for rotate
+	while (1) { //This is an omnidirectional one-joystick arcade style drive w/ bumpers for rotate
 
-mode = 2;
+		mode = 2;
 
-	RightJoyM = JoyClear(vexRT[Ch2]);
-	RightJoyS = JoyClear(vexRT[Ch2Xmtr2]);
-	LeftJoyM = JoyClear(vexRT[Ch3]);
-	LeftJoyS = JoyClear(vexRT[Ch3Xmtr2]);
+		RightJoyM = JoyClear(vexRT[Ch2]);
+		RightJoyS = JoyClear(vexRT[Ch2Xmtr2]);
+		LeftJoyM = JoyClear(vexRT[Ch3]);
+		LeftJoyS = JoyClear(vexRT[Ch3Xmtr2]);
 
 
-	if (mode == 2) {
-	motor[port2] = RightJoyM + vexRT[Btn5U]*75 + vexRT[Btn6U]*-75;
-	motor[port3]= RightJoyM + vexRT[Btn5U]*-75 + vexRT[Btn6U]*75;
-	motor[port8] = LeftJoyM + vexRT[Btn5U]*-75 + vexRT[Btn6U]*75;
-	motor[port9] = LeftJoyM + vexRT[Btn5U]*75 + vexRT[Btn6U]*-75;
-	motor[port5]= RightJoyS; //  vexRT[Btn8DXmtr2]*-127; //Lift Right Tower
-	motor[port6]= RightJoyS; // vexRT[Btn8DXmtr2]*-127; //Lift Left Tower
-	motor[port4]= LeftJoyS; // + vexRT[Btn7DXmtr2]*-127; //Conveyor
+		if (mode == 2) {
+			motor[port2] = RightJoyM + vexRT[Btn5U]*75 + vexRT[Btn6U]*-75;
+			motor[port3]= RightJoyM + vexRT[Btn5U]*-75 + vexRT[Btn6U]*75;
+			motor[port8] = LeftJoyM + vexRT[Btn5U]*-75 + vexRT[Btn6U]*75;
+			motor[port9] = LeftJoyM + vexRT[Btn5U]*75 + vexRT[Btn6U]*-75;
+			motor[port5]= RightJoyS; //	 vexRT[Btn8DXmtr2]*-127; //Lift Right Tower
+			motor[port6]= RightJoyS; // vexRT[Btn8DXmtr2]*-127; //Lift Left Tower
+			motor[port4]= LeftJoyS; // + vexRT[Btn7DXmtr2]*-127; //Conveyor
+		}
+
+		if (mode == 1)	{
+			motor[port2] = LeftJoyM*0.5 + vexRT[Ch4]*-0.5 + vexRT[Btn5U]*50 + vexRT[Btn6U]*-50; //Front Right
+			motor[port3] = LeftJoyM*0.5 + vexRT[Ch4]*0.5 + vexRT[Btn5U]*50 + vexRT[Btn6U]*-50;  //Back Right
+			motor[port8] = LeftJoyM*0.5 + vexRT[Ch4]*0.5 + vexRT[Btn5U]*-50 + vexRT[Btn6U]*50;  //Front Left
+			motor[port9] = LeftJoyM*0.5 + vexRT[Ch4]*-0.5 + vexRT[Btn5U]*-50 + vexRT[Btn6U]*50; //Back Left
+			motor[port5]= vexRT[Btn8U]*127 + vexRT[Btn8D]*-127; //Lift Right Tower
+			motor[port6]= vexRT[Btn8U]*127 + vexRT[Btn8D]*-127; //Lift Left Tower
+			motor[port4]= vexRT[Btn7U]*127 + vexRT[Btn7D]*-127; //Conveyor
+
+		}
+
+		wait1Msec(10);
+
+		/*
+
+		}
+		while (0) {			//to Andrew: This is some testing code I made for single direction control
+
+		if (vexRT[Btn8U] == 1) {		//FWD Drive
+		motor[port2] = 70;
+		motor[port3] = 70;
+		motor[port8] = 70;
+		motor[port9] = 70;
+		}
+		else { if (vexRT[Btn8D] == 1) {	//BACK Drive
+		motor[port2] = -70;
+		motor[port3] = -70;
+		motor[port8] = -70;
+		motor[port9] = -70;
+		} else { if (vexRT[Btn8L] == 1) { //LEFT Drive
+		motor[port2] = 70;
+		motor[port3] = -70;
+		motor[port8] = -70;
+		motor[port9] = 70;
+		} else { if (vexRT[Btn8R] == 1) { //RIGHT Drive
+		motor[port2] = -70;
+		motor[port3] = 70;
+		motor[port8] = 70;
+		motor[port9] = -70;
+		} else { if (vexRT[Btn6U] == 1) { //CCW Rotate
+		motor[port2] = -70;
+		motor[port3] = -70;
+		motor[port8] = 70;
+		motor[port9] = 70;
+		} else { if (vexRT[Btn5U] == 1) { //CW Rotate
+		motor[port2] = 70;
+		motor[port3] = 70;
+		motor[port8] = -70;
+		motor[port9] = -70;
+		}else{
+		motor[port2] = 0;			//No Move
+		motor[port3] = 0;
+		motor[port8] = 0;
+		motor[port9] = 0;
+		}}}}}}}
+		wait1Msec(10);		//Don't hog CPU
+		*/
+
 	}
-
-	if (mode == 1)	{
-	motor[port2] = LeftJoyM*0.5 + vexRT[Ch4]*-0.5 + vexRT[Btn5U]*50 + vexRT[Btn6U]*-50; //Front Right
-	motor[port3] = LeftJoyM*0.5 + vexRT[Ch4]*0.5 + vexRT[Btn5U]*50 + vexRT[Btn6U]*-50;  //Back Right
-	motor[port8] = LeftJoyM*0.5 + vexRT[Ch4]*0.5 + vexRT[Btn5U]*-50 + vexRT[Btn6U]*50;  //Front Left
-	motor[port9] = LeftJoyM*0.5 + vexRT[Ch4]*-0.5 + vexRT[Btn5U]*-50 + vexRT[Btn6U]*50; //Back Left
-	motor[port5]= vexRT[Btn8U]*127 + vexRT[Btn8D]*-127; //Lift Right Tower
-	motor[port6]= vexRT[Btn8U]*127 + vexRT[Btn8D]*-127; //Lift Left Tower
-	motor[port4]= vexRT[Btn7U]*127 + vexRT[Btn7D]*-127; //Conveyor
-
-	}
-
-	wait1Msec(10);
-
-/*
-
-}
-while (0) {			//to Andrew: This is some testing code I made for single direction control
-
-if (vexRT[Btn8U] == 1) {		//FWD Drive
-motor[port2] = 70;
-motor[port3] = 70;
-motor[port8] = 70;
-motor[port9] = 70;
-}
-else { if (vexRT[Btn8D] == 1) {	//BACK Drive
-motor[port2] = -70;
-motor[port3] = -70;
-motor[port8] = -70;
-motor[port9] = -70;
-} else { if (vexRT[Btn8L] == 1) { //LEFT Drive
-motor[port2] = 70;
-motor[port3] = -70;
-motor[port8] = -70;
-motor[port9] = 70;
-} else { if (vexRT[Btn8R] == 1) { //RIGHT Drive
-motor[port2] = -70;
-motor[port3] = 70;
-motor[port8] = 70;
-motor[port9] = -70;
-} else { if (vexRT[Btn6U] == 1) { //CCW Rotate
-motor[port2] = -70;
-motor[port3] = -70;
-motor[port8] = 70;
-motor[port9] = 70;
-} else { if (vexRT[Btn5U] == 1) { //CW Rotate
-motor[port2] = 70;
-motor[port3] = 70;
-motor[port8] = -70;
-motor[port9] = -70;
-}else{
-motor[port2] = 0;			//No Move
-motor[port3] = 0;
-motor[port8] = 0;
-motor[port9] = 0;
-}}}}}}}
-wait1Msec(10);		//Don't hog CPU
-*/
-
-}
 }
