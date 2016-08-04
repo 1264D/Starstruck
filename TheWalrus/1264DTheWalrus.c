@@ -1,16 +1,18 @@
 #pragma config(I2C_Usage, I2C1, i2cSensors)
-#pragma config(Sensor, in1,    Lift,           sensorPotentiometer)
+#pragma config(Sensor, in1,    Poten1,         sensorPotentiometer)
+#pragma config(Sensor, in2,    Poten2,         sensorPotentiometer)
 #pragma config(Sensor, I2C_1,  FrontLeft,      sensorQuadEncoderOnI2CPort,    , AutoAssign )
 #pragma config(Sensor, I2C_2,  FrontRight,     sensorQuadEncoderOnI2CPort,    , AutoAssign )
 #pragma config(Sensor, I2C_3,  BackLeft,       sensorQuadEncoderOnI2CPort,    , AutoAssign )
 #pragma config(Sensor, I2C_4,  BackRight,      sensorQuadEncoderOnI2CPort,    , AutoAssign )
+#pragma config(Sensor, I2C_5,  Manipulator,    sensorQuadEncoderOnI2CPort,    , AutoAssign )
 #pragma config(Motor,  port1,            ,             tmotorVex393_HBridge, openLoop)
 #pragma config(Motor,  port2,           FrontRight,    tmotorVex393_MC29, openLoop, reversed, encoderPort, I2C_1)
 #pragma config(Motor,  port3,           BackRight,     tmotorVex393_MC29, openLoop, reversed, encoderPort, I2C_2)
-#pragma config(Motor,  port4,            ,             tmotorVex393_MC29, openLoop)
+#pragma config(Motor,  port4,           Mechanism1,    tmotorVex393_MC29, openLoop)
 #pragma config(Motor,  port5,           Lift1,         tmotorVex393_MC29, openLoop)
 #pragma config(Motor,  port6,           Lift2,         tmotorVex393_MC29, openLoop, reversed)
-#pragma config(Motor,  port7,            ,             tmotorVex393_MC29, openLoop)
+#pragma config(Motor,  port7,           Mechanism2,    tmotorVex393_MC29, openLoop)
 #pragma config(Motor,  port8,           FrontLeft,     tmotorVex393_MC29, openLoop, encoderPort, I2C_3)
 #pragma config(Motor,  port9,           BackLeft,      tmotorVex393_MC29, openLoop, encoderPort, I2C_4)
 #pragma config(Motor,  port10,           ,             tmotorVex393_HBridge, openLoop)
@@ -26,9 +28,23 @@
 #include "Vex_Competition_Includes.c"   //Main competition background code...do not modify!
 int LiftAngle; //Requested angle
 bool AngleToggle;
+int realAngle;
+
+void AngleCorrect(){
+	realAngle = SensorValue[in2] - 0;
+	if((realAngle >= (SensorValue[in1] + 5))||(realAngle <= (SensorValue[in1] + 5))){
+		AngleToggle = false;
+	}
+	else if((realAngle <= (SensorValue[in1] - 5))){
+		motor[port5] = 66;
+	}
+	else if((realAngle >= (SensorValue[in1] + 5))){
+		motor[port5] = -66;
+	}
+}
 
 void AngleLift(){
-	if(AngleToggle == 1){
+	if(AngleToggle == true){
 		if((SensorValue[in1] >= LiftAngle - 5) || (SensorValue[in1] <= LiftAngle + 5)) {
 			motor[Lift1] = 0;
 			motor[Lift2] = 0;
@@ -53,6 +69,8 @@ void base(){
 }
 
 void lift(){
+	AngleCorrect();
+	AngleLift();
 	if(AngleToggle == false){
 		motor[Lift1]= vexRT[Btn8U]*127 + vexRT[Btn8D]*-127;
 		motor[Lift2]= vexRT[Btn8U]*127 + vexRT[Btn8D]*-127;
@@ -93,6 +111,5 @@ task usercontrol()
 	while (true)
 	{
 		control();
-		AngleLift();
 	}
 }
