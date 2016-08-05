@@ -3,4 +3,4 @@
 
 See the wiki for more information about the code and robot.
 
-Wiki: https://github.com/1264D/1264DTheWalrus/wiki
+Wiki: https://github.com/1264D/Starstruck/wiki
