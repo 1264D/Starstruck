@@ -95,10 +95,7 @@ void Lift(){
 		LiftAngle = 1820;
 		AngleToggle = true;
 	}
-else if(vexRT[Btn8RXmtr2] == 1){
-		LiftAngle = -5;
-		AngleToggle = true;
-	}
+
 	AngleCorrect();
 	AngleLift();
 	if(AngleToggle == false){
