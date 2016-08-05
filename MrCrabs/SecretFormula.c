@@ -50,7 +50,7 @@ void Variables(){
 }
 void AngleCorrect(){
 	RealAngle = SensorValue[in2] + 700;
-	if((RealAngle >= (SensorValue[in1] + 40)) || (RealAngle <= (SensorValue[in1] + 40))){
+	if((RealAngle >= (SensorValue[in1] - 40)) && (RealAngle <= (SensorValue[in1] + 40))){
 		AngleToggle = false;
 	}
 	else if((RealAngle <= (SensorValue[in1] - 40))){
