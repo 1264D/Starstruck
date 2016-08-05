@@ -1,5 +1,5 @@
 # 1264DTheWalrus
-1264D Vex Starstruck code for "The Walrus". Written in RobotC
+1264D Vex Starstruck code. Written in RobotC
 
 See the wiki for more information about the code and robot.
 
