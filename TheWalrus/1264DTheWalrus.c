@@ -31,14 +31,14 @@ bool AngleToggle;
 int realAngle;
 
 void AngleCorrect(){
-	realAngle = SensorValue[in2] - 0;
-	if((realAngle >= (SensorValue[in1] + 5))||(realAngle <= (SensorValue[in1] + 5))){
+	realAngle = SensorValue[in2] + 700;
+	if((realAngle >= (SensorValue[in1] + 40))||(realAngle <= (SensorValue[in1] + 40))){
 		AngleToggle = false;
 	}
-	else if((realAngle <= (SensorValue[in1] - 5))){
+	else if((realAngle <= (SensorValue[in1] - 40))){
 		motor[port5] = 66;
 	}
-	else if((realAngle >= (SensorValue[in1] + 5))){
+	else if((realAngle >= (SensorValue[in1] + 40))){
 		motor[port5] = -66;
 	}
 }
@@ -69,7 +69,7 @@ void base(){
 }
 
 void lift(){
-	AngleCorrect();
+//	AngleCorrect();
 	AngleLift();
 	if(AngleToggle == false){
 		motor[Lift1]= vexRT[Btn8U]*127 + vexRT[Btn8D]*-127;
