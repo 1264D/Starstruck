@@ -50,7 +50,7 @@ void Variables(){
 }
 void AngleCorrect(){
 	RealAngle = SensorValue[in2] + 700;
-	if((RealAngle >= (SensorValue[in1] + 40))||(RealAngle <= (SensorValue[in1] + 40))){
+	if((RealAngle >= (SensorValue[in1] + 40)) || (RealAngle <= (SensorValue[in1] + 40))){
 		AngleToggle = false;
 	}
 	else if((RealAngle <= (SensorValue[in1] - 40))){
@@ -63,7 +63,7 @@ void AngleCorrect(){
 
 void AngleLift(){
 	if(AngleToggle == true){
-		if((SensorValue[in1] >= LiftAngle - 40) || (SensorValue[in1] <= LiftAngle + 40)) {
+		if((SensorValue[in1] >= LiftAngle - 40) && (SensorValue[in1] <= LiftAngle + 40)) {
 			motor[Lift1] = 0;
 			motor[Lift2] = 0;
 			AngleToggle = false;
