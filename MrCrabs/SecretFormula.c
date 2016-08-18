@@ -1,6 +1,16 @@
 #pragma config(I2C_Usage, I2C1, i2cSensors)
 #pragma config(Sensor, in1,    Poten1,         sensorPotentiometer)
 #pragma config(Sensor, in2,    Poten2,         sensorPotentiometer)
+#pragma config(Sensor, dgtl1,  DriveToggle,    sensorTouch)
+#pragma config(Sensor, dgtl2,  ,               sensorTouch)
+#pragma config(Sensor, dgtl3,  ,               sensorTouch)
+#pragma config(Sensor, dgtl4,  ,               sensorTouch)
+#pragma config(Sensor, dgtl5,  ,               sensorTouch)
+#pragma config(Sensor, dgtl6,  ,               sensorTouch)
+#pragma config(Sensor, dgtl7,  ,               sensorTouch)
+#pragma config(Sensor, dgtl8,  ,               sensorTouch)
+#pragma config(Sensor, dgtl9,  ,               sensorTouch)
+#pragma config(Sensor, dgtl10, ,               sensorTouch)
 #pragma config(Sensor, I2C_1,  FrontLeft,      sensorQuadEncoderOnI2CPort,    , AutoAssign )
 #pragma config(Sensor, I2C_2,  FrontRight,     sensorQuadEncoderOnI2CPort,    , AutoAssign )
 #pragma config(Sensor, I2C_3,  BackLeft,       sensorQuadEncoderOnI2CPort,    , AutoAssign )
@@ -87,26 +97,47 @@ void Base(){
 }
 
 void Lift(){
-	if(vexRT[Btn8UXmtr2] == 1){
-		LiftAngle = 3270;
-		AngleToggle = true;
+	if(SensorValue[DriveToggle] == 1){
+		if(vexRT[Btn8UXmtr2] == 1){
+			LiftAngle = 3270;
+			AngleToggle = true;
+		}
+		else if(vexRT[Btn8DXmtr2] == 1){
+			LiftAngle = 1820;
+			AngleToggle = true;
+		}
 	}
-	else if(vexRT[Btn8DXmtr2] == 1){
-		LiftAngle = 1820;
-		AngleToggle = true;
+	else{
+		if(vexRT[Btn8L] == 1){
+			LiftAngle = 3270;
+			AngleToggle = true;
+		}
+		else if(vexRT[Btn8R] == 1){
+			LiftAngle = 1820;
+			AngleToggle = true;
+		}
 	}
-
 	AngleCorrect();
 	AngleLift();
-	if(AngleToggle == false){
+	if(AngleToggle == false && SensorValue[DriveToggle] == 1){
 		motor[Lift1]= RightJoyS;
 		motor[Lift2]= RightJoyS;
+	}
+	else if(AngleToggle == false){
+		motor[Lift1]= VexRT[Btn8U];
+		motor[Lift2]= VexRT[Btn8D];
 	}
 }
 
 void Manipulator(){
-	motor[Manipulator1] = LeftJoyS;
-	motor[Manipulator2] = LeftJoyS;
+	if(SensorValue[DriveToggle] == 1){
+		motor[Manipulator1] = LeftJoyS;
+		motor[Manipulator2] = LeftJoyS;
+	}
+	else{
+		motor[Manipulator1] = VexRT[Btn6D];
+		motor[Manipulator2] = vexRT[Btn5D];
+	}
 }
 
 void Control(){
