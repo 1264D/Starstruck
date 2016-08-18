@@ -69,7 +69,7 @@ void base(){
 }
 
 void lift(){
-//	AngleCorrect();
+	AngleCorrect();
 	AngleLift();
 	if(AngleToggle == false){
 		motor[Lift1]= vexRT[Btn8U]*127 + vexRT[Btn8D]*-127;
@@ -77,9 +77,13 @@ void lift(){
 	}
 }
 
+void lcd(){
+
+}
 void control(){
 	base();
 	lift();
+	lcd();
 }
 
 void pre_auton()
