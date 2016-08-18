@@ -124,8 +124,8 @@ void Lift(){
 		motor[Lift2]= RightJoyS;
 	}
 	else if(AngleToggle == false){
-		motor[Lift1]= VexRT[Btn8U];
-		motor[Lift2]= VexRT[Btn8D];
+		motor[Lift1]= VexRT[Btn8U]*127 + VexRT[Btn8D]*-127;
+		motor[Lift2]= VexRT[Btn8U]*127 + VexRT[Btn8D]*-127;
 	}
 }
 
@@ -135,8 +135,8 @@ void Manipulator(){
 		motor[Manipulator2] = LeftJoyS;
 	}
 	else{
-		motor[Manipulator1] = VexRT[Btn6D];
-		motor[Manipulator2] = vexRT[Btn5D];
+		motor[Manipulator1] = VexRT[Btn6D]*127 + vexRT[Btn5D]*-127;
+		motor[Manipulator2] = VexRT[Btn6D]*127 + vexRT[Btn5D]*-127;
 	}
 }
 
