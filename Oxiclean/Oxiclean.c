@@ -89,15 +89,15 @@ void AngleCorrect(){
 	RealAngle = SensorValue[Poten2] + 700; //convertpoteniometer2
 	if((RealAngle >= (SensorValue[Poten1] - 40)) && (RealAngle <= (SensorValue[Poten1] + 40)) && AngleToggle2 == true){ //If the Poten1 matches Poten2 then disable
 		AngleToggle2 = false;
-		motor[Arm1] = 0;
+		motor[Arm2] = 0;
 	}
 	else if((RealAngle <= (SensorValue[Poten1] - 40))){ //If Poten2 is lower then Poten1 then raise Poten2
 		AngleToggle2 = true;
-		motor[Arm1] = 66;
+		motor[Arm2] = 66;
 	}
 	else if((RealAngle >= (SensorValue[Poten1] + 40))){ //If Poten2 is higher then Poten1 then lower Poten2
 		AngleToggle2 = true;
-		motor[Arm1] = -66;
+		motor[Arm2] = -66;
 	}
 }
 
