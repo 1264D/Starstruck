@@ -61,14 +61,14 @@ int JoyClear(int origVal) { //intake current joystick position
 	//Stops the idle motor sound
 }
 
-int PowerCap(int motorPower){
-	if(abs(motorPower) <= 127){
+int PowerCap(int motorPower){ //intake joystick position
+	if(abs(motorPower) <= 127){ //if power value is between 127 & -127 then return actual power
 		return motorPower;
 	}
-	else if(motorPower > 127){
+	else if(motorPower > 127){ //if above 127, set to 127
 		return 127;
 	}
-	else{
+	else{ //if below -127, set to -127
 		return -127;
 	}
 }
@@ -125,12 +125,18 @@ void Base(){
 		motor[FrontRight] = PowerCap(RightJoyMV + RightJoyMH + vexRT[Btn5U]*-120 + vexRT[Btn6U]*120 + vexRT[Btn5D]*-40 + vexRT[Btn6D]*40);
 		motor[BackLeft] = PowerCap(RightJoyMV + RightJoyMH + vexRT[Btn5U]*120 + vexRT[Btn6U]*-120 + vexRT[Btn5D]*-40 + vexRT[Btn6D]*40);
 		motor[BackRight] = PowerCap(RightJoyMV + RightJoyMH + vexRT[Btn5U]*-120 + vexRT[Btn6U]*120 + vexRT[Btn5D]*40 + vexRT[Btn6D]*-40);
+		//Control Drive using horizontal and vertical axes and upper bumbers for quick turn and lower for percise turn
+		//Left bumpers turns counter clockwise and right bumpers turn clockwise
 	}
 	else{
-		motor[FrontLeft] = PowerCap(LeftJoyMV + vexRT[Btn5U]*-100 + vexRT[Btn6U]*100); //Control front left wheel using left main joystick and strafe left and strafe right using upper bumpers
-		motor[FrontRight] = PowerCap(RightJoyMV + vexRT[Btn5U]*100 + vexRT[Btn6U]*-100); //Control front right wheel using right main joystick and strafe left and right using upper bumpers
-		motor[BackLeft] = PowerCap(LeftJoyMV + vexRT[Btn5U]*100 + vexRT[Btn6U]*-100); //Control back left wheel using left main joystick and strafe left and right using upper bumpers
-		motor[BackRight] = PowerCap(RightJoyMV + vexRT[Btn5U]*-100 + vexRT[Btn6U]*100); //Control back right wheel using right main joystick and strafe left and right using upper bumpers
+		motor[FrontLeft] = PowerCap(LeftJoyMV + vexRT[Btn5U]*-100 + vexRT[Btn6U]*100);
+		//Control front left wheel using left main joystick and strafe left and strafe right using upper bumpers
+		motor[FrontRight] = PowerCap(RightJoyMV + vexRT[Btn5U]*100 + vexRT[Btn6U]*-100);
+		//Control front right wheel using right main joystick and strafe left and right using upper bumpers
+		motor[BackLeft] = PowerCap(LeftJoyMV + vexRT[Btn5U]*100 + vexRT[Btn6U]*-100);
+		//Control back left wheel using left main joystick and strafe left and right using upper bumpers
+		motor[BackRight] = PowerCap(RightJoyMV + vexRT[Btn5U]*-100 + vexRT[Btn6U]*100);
+		//Control back right wheel using right main joystick and strafe left and right using upper bumpers
 	}
 }
 
