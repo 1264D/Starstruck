@@ -142,8 +142,12 @@ void Base(){
 
 void Lift(){
 	if(SensorValue[TwoRemote] == 1){ //If Two Remote jumper is in
-		if(vexRT[Btn8UXmtr2] == 1){ //Btn8U on second remote requests angle to top
-			ArmAngle = 3270;
+		if(vexRT[Btn8LXmtr2] == 1){ //Btn8U on second remote requests angle to top
+			ArmAngle = 0; //Insert Hang Value
+			AngleToggle = true;
+		}
+		else if(vexRT[Btn8UXmtr2] == 1){ //Btn8U on second remote requests angle to Up
+			ArmAngle = 3270; //Change
 			AngleToggle = true;
 		}
 		else if(vexRT[Btn8DXmtr2] == 1){ //Btn8D on second remote requests angle to bottom
@@ -151,12 +155,30 @@ void Lift(){
 			AngleToggle = true;
 		}
 	}
-	else{ //Jumper is not there, ie: if 1 person mode is enabled
-		if(vexRT[Btn8L] == 1){ //Btn8L brings lift up
-			ArmAngle = 3270;
+	else if(SensorValue[ArcadeContol] == 1){ //If 1 person mode is enabled and Arcade control is enabled
+		if(vexRT[Btn7L] == 1){
+			ArmAngle = 0; //Insert Hang Value
 			AngleToggle = true;
 		}
-		else if(vexRT[Btn8R] == 1){ //Btn8R brings lift down
+		else if(vexRT[Btn7U] == 1){ //Btn8U brings lift up
+			ArmAngle = 3270; //Change
+			AngleToggle = true;
+		}
+		else if(vexRT[Btn7D] == 1){ //Btn8D brings lift down
+			ArmAngle = 1820;
+			AngleToggle = true;
+		}
+	}
+	else{
+		if(vexRT[Btn7R] == 1){
+			ArmAngle = 0; //Insert Hang Value
+			AngleToggle = true;
+		}
+		else if(vexRT[Btn8U] == 1){ //Btn8U brings lift up
+			ArmAngle = 3270; //Change
+			AngleToggle = true;
+		}
+		else if(vexRT[Btn8D] == 1){ //Btn8D brings lift down
 			ArmAngle = 1820;
 			AngleToggle = true;
 		}
