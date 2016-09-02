@@ -21,8 +21,8 @@
 #pragma config(Motor,  port2,           FrontRight,    tmotorVex393_MC29, openLoop, reversed, encoderPort, I2C_1)
 #pragma config(Motor,  port3,           BackRight,     tmotorVex393_MC29, openLoop, reversed, encoderPort, I2C_2)
 #pragma config(Motor,  port4,            ,             tmotorVex393_MC29, openLoop, reversed)
-#pragma config(Motor,  port5,           Arm1,      tmotorVex393_MC29, openLoop)
-#pragma config(Motor,  port6,           Arm2,      tmotorVex393_MC29, openLoop, reversed)
+#pragma config(Motor,  port5,           Arm1,          tmotorVex393_MC29, openLoop, reversed)
+#pragma config(Motor,  port6,           Arm2,          tmotorVex393_MC29, openLoop)
 #pragma config(Motor,  port7,            ,             tmotorVex393_MC29, openLoop)
 #pragma config(Motor,  port8,           FrontLeft,     tmotorVex393_MC29, openLoop, encoderPort, I2C_3)
 #pragma config(Motor,  port9,           BackLeft,      tmotorVex393_MC29, openLoop, encoderPort, I2C_4)
@@ -122,8 +122,8 @@ void AngleArm(){
 void Base(){
 	if(SensorValue[ArcadeContol] == 1){
 		motor[FrontLeft] = PowerCap(RightJoyMV + RightJoyMH + vexRT[Btn5U]*120 + vexRT[Btn6U]*-120 + vexRT[Btn5D]*40 + vexRT[Btn6D]*-40);
-		motor[FrontRight] = PowerCap(RightJoyMV + RightJoyMH + vexRT[Btn5U]*-120 + vexRT[Btn6U]*120 + vexRT[Btn5D]*-40 + vexRT[Btn6D]*40);
-		motor[BackLeft] = PowerCap(RightJoyMV + RightJoyMH + vexRT[Btn5U]*120 + vexRT[Btn6U]*-120 + vexRT[Btn5D]*-40 + vexRT[Btn6D]*40);
+		motor[FrontRight] = PowerCap(RightJoyMV + -RightJoyMH + vexRT[Btn5U]*-120 + vexRT[Btn6U]*120 + vexRT[Btn5D]*-40 + vexRT[Btn6D]*40);
+		motor[BackLeft] = PowerCap(RightJoyMV + -RightJoyMH + vexRT[Btn5U]*120 + vexRT[Btn6U]*-120 + vexRT[Btn5D]*-40 + vexRT[Btn6D]*40);
 		motor[BackRight] = PowerCap(RightJoyMV + RightJoyMH + vexRT[Btn5U]*-120 + vexRT[Btn6U]*120 + vexRT[Btn5D]*40 + vexRT[Btn6D]*-40);
 		//Control Drive using horizontal and vertical axes and upper bumbers for quick turn and lower for percise turn
 		//Left bumpers turns counter clockwise and right bumpers turn clockwise
@@ -183,7 +183,7 @@ void Lift(){
 			AngleToggle = true;
 		}
 	}
-	AngleCorrect();
+	//	AngleCorrect();
 	AngleArm();
 	if(AngleToggle == false && SensorValue[TwoRemote] == 1 && AngleToggle2 == false){ //If it is not correcting or moving to presets and two person mode is enabled
 		motor[Arm1] = RightJoySV; //Control lift with 2nd remote right joystick
@@ -201,9 +201,13 @@ void Lift(){
 	}
 }
 
+void lcd(){
+
+}
 void Control(){
 	Base();
 	Lift();
+	lcd();
 }
 
 void pre_auton()
