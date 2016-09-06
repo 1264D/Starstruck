@@ -19,41 +19,9 @@
 //Main competition background code...do not modify!
 #include "Vex_Competition_Includes.c"
 
-/*---------------------------------------------------------------------------*/
-/*                          Pre-Autonomous Functions                         */
-/*                                                                           */
-/*  You may want to perform some actions before the competition starts.      */
-/*  Do them in the following function.  You must return from this function   */
-/*  or the autonomous and usercontrol tasks will not be started.  This       */
-/*  function is only called once after the cortex has been powered on and    */
-/*  not every time that the robot is disabled.                               */
-/*---------------------------------------------------------------------------*/
-
 void pre_auton()
 {
-	// Set bStopTasksBetweenModes to false if you want to keep user created tasks
-	// running between Autonomous and Driver controlled modes. You will need to
-	// manage all user created tasks if set to false.
-	bStopTasksBetweenModes = true;
-
-	// Set bDisplayCompetitionStatusOnLcd to false if you don't want the LCD
-	// used by the competition include file, for example, you might want
-	// to display your team name on the LCD in this function.
-	// bDisplayCompetitionStatusOnLcd = false;
-
-	// All activities that occur before the competition starts
-	// Example: clearing encoders, setting servo positions, ...
 }
-
-/*---------------------------------------------------------------------------*/
-/*                                                                           */
-/*                              Autonomous Task                              */
-/*                                                                           */
-/*  This task is used to control your robot during the autonomous phase of   */
-/*  a VEX Competition.                                                       */
-/*                                                                           */
-/*  You must modify the code to add your own robot specific commands here.   */
-/*---------------------------------------------------------------------------*/
 
 task autonomous()
 {
@@ -64,25 +32,16 @@ task autonomous()
 	// Remove this function call once you have "real" code.
 	AutonomousCodePlaceholderForTesting();
 }
-
-/*---------------------------------------------------------------------------*/
-/*                                                                           */
-/*                              User Control Task                            */
-/*                                                                           */
-/*  This task is used to control your robot during the user control phase of */
-/*  a VEX Competition.                                                       */
-/*                                                                           */
-/*  You must modify the code to add your own robot specific commands here.   */
-/*---------------------------------------------------------------------------*/
-
+void drive() {
+	motor[FrontLeft] = vexRT[Ch3] + vexRT[Btn5U] *127 + vexRT[Btn6U] *-127;
+	motor[FrontRight] = vexRT[Ch2] + vexRT[Btn5U] *-127 + vexRT[Btn6U] *127;
+	motor[BackLeft] = vexRT[Ch3] + vexRT[Btn5U] *127 + vexRT[Btn6U] *-127;
+	motor[BackRight] = vexRT[Ch2] + vexRT[Btn5U] *-127 + vexRT[Btn6U] *127;
+}
 task usercontrol()
 {
-	// User control code here, inside the loop
 	while (true)
 	{
-			motor[FrontLeft] = vexRT[ch3] + vexRT[Btn5U] *127 + vexRT[Btn6U] *-127;
-			motor[FrontRight] = vexRT[ch2] + vexRT[Btn5U] *-127 + vexRT[Btn6U] *127;
-			motor[BackLeft] = vexRT[ch3] + vexRT[Btn5U] *127 + vexRT[Btn6U] *-127;
-			motor[BackRight] = vexRT[ch2] + vexRT[Btn5U] *-127 + vexRT[Btn6U] *127;
+		drive();
 	}
 }
