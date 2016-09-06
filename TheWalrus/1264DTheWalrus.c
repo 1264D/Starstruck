@@ -96,13 +96,11 @@ void control(){
 	lcd();
 }
 
-void pre_auton()
-{
+void pre_auton(){
 	bStopTasksBetweenModes = true;
 }
 
-task autonomous()
-{
+task autonomous(){
 	// .....................................................................................
 	// Insert user code here.
 	// .....................................................................................
@@ -110,8 +108,7 @@ task autonomous()
 	AutonomousCodePlaceholderForTesting();  // Remove this function call once you have "real" code.
 }
 
-task usercontrol()
-{
+task usercontrol(){
 	motor[port1] = 0;
 	motor[port2] = 0;
 	motor[port3] = 0;
@@ -123,7 +120,7 @@ task usercontrol()
 	motor[port9] = 0;
 	motor[port10] = 0;
 	while (true)
-	{
+{
 		control();
 	}
 }

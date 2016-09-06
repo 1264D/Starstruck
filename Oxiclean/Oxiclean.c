@@ -210,19 +210,16 @@ void Control(){
 	lcd();
 }
 
-void pre_auton()
-{
+void pre_auton(){
 	bStopTasksBetweenModes = true;
 }
 
-task autonomous()
-{
+task autonomous(){
 	AutonomousCodePlaceholderForTesting();
 }
 
-task usercontrol()
-{
-
+task usercontrol(){
+ bLCDBacklight = false;
 	while (true)
 	{
 		Control();

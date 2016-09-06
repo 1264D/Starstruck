@@ -38,10 +38,22 @@ void drive() {
 	motor[BackLeft] = vexRT[Ch3] + vexRT[Btn5U] *127 + vexRT[Btn6U] *-127;
 	motor[BackRight] = vexRT[Ch2] + vexRT[Btn5U] *-127 + vexRT[Btn6U] *127;
 }
+void LCD() {
+	if(nLCDButtons == 7){
+		displayLCDString(0,0,"Srry!");
+	}
+	else if(nLCDButtons == 6){
+		displayLCDString(1,0,"Let's go bowling!");
+	}
+}
 task usercontrol()
 {
+	bLCDBacklight = true;
+	clearLCDLine(0);
+	clearLCDLine(1);
 	while (true)
 	{
 		drive();
+		LCD();
 	}
 }
