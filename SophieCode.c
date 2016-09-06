@@ -19,6 +19,8 @@
 //Main competition background code...do not modify!
 #include "Vex_Competition_Includes.c"
 
+
+string battery;
 void pre_auton()
 {
 }
@@ -39,6 +41,8 @@ void drive() {
 	motor[BackRight] = vexRT[Ch2] + vexRT[Btn5U] *-127 + vexRT[Btn6U] *127;
 }
 void LCD() {
+	battery = (nImmediateBatteryLevel/1000.);
+	displayLCDCenteredString(0,battery);
 	if(nLCDButtons == 7){
 		displayLCDString(0,0,"Srry!");
 	}

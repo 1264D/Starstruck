@@ -50,6 +50,8 @@ int LeftJoyMH; //Main Left X
 int LeftJoySH; //Partner Left X
 int RightJoyMH; //Main Right X
 int RightJoySH; //Partner Right X
+string batteryMain;
+string batteryPowerExpander;
 
 int JoyClear(int origVal) { //intake current joystick position
 	if(abs(origVal) < 10){ // if joystick is close to still just return 0
@@ -202,27 +204,35 @@ void Lift(){
 }
 
 void lcd(){
-
-}
-void Control(){
-	Base();
-	Lift();
-	lcd();
-}
-
-void pre_auton(){
-	bStopTasksBetweenModes = true;
-}
-
-task autonomous(){
-	AutonomousCodePlaceholderForTesting();
-}
-
-task usercontrol(){
- bLCDBacklight = false;
-	while (true)
-	{
-		Control();
-		Variables();
+	batteryMain = (nImmediateBatteryLevel/1000.);
+	if(nLCDButtons ==7){
+		displayLCDString(1,0,"Let's go bowling");
 	}
+	else{
+		displayLCDString(0,0,batteryMain);
 }
+}
+	void Control(){
+		Base();
+		Lift();
+		lcd();
+	}
+
+	void pre_auton(){
+		bStopTasksBetweenModes = true;
+	}
+
+	task autonomous(){
+		AutonomousCodePlaceholderForTesting();
+	}
+
+	task usercontrol(){
+		bLCDBacklight = true;
+		clearLCDLine(0);
+		clearLCDLine(1);
+		while (true)
+		{
+			Control();
+			Variables();
+		}
+	}
