@@ -21,8 +21,8 @@
 #pragma config(Motor,  port2,           FrontRight,    tmotorVex393_MC29, openLoop, reversed, encoderPort, I2C_1)
 #pragma config(Motor,  port3,           BackRight,     tmotorVex393_MC29, openLoop, reversed, encoderPort, I2C_2)
 #pragma config(Motor,  port4,            ,             tmotorVex393_MC29, openLoop, reversed)
-#pragma config(Motor,  port5,           Arm1,          tmotorVex393_MC29, openLoop, reversed)
-#pragma config(Motor,  port6,           Arm2,          tmotorVex393_MC29, openLoop)
+#pragma config(Motor,  port5,           Arm1,          tmotorVex393_MC29, openLoop)
+#pragma config(Motor,  port6,           Arm2,          tmotorVex393_MC29, openLoop, reversed)
 #pragma config(Motor,  port7,            ,             tmotorVex393_MC29, openLoop)
 #pragma config(Motor,  port8,           FrontLeft,     tmotorVex393_MC29, openLoop, encoderPort, I2C_3)
 #pragma config(Motor,  port9,           BackLeft,      tmotorVex393_MC29, openLoop, encoderPort, I2C_4)
@@ -41,6 +41,8 @@
 int ArmAngle; //Preset angles
 bool AngleToggle; //Disables lift while moving to presets
 bool AngleToggle2; //Disables lift while correcting
+bool holding;
+bool holding2;
 int RealAngle; //Converts 2nd Potentiometer value to 1st
 int RightJoyMV; //Main Right Y
 int RightJoySV; //Partner Right Y
@@ -88,7 +90,7 @@ void Variables(){
 }
 
 void AngleCorrect(){
-	RealAngle = SensorValue[Poten2] + 700; //convertpoteniometer2
+	RealAngle = SensorValue[Poten2] - 550; //convertpoteniometer2
 	if((RealAngle >= (SensorValue[Poten1] - 40)) && (RealAngle <= (SensorValue[Poten1] + 40)) && AngleToggle2 == true){ //If the Poten1 matches Poten2 then disable
 		AngleToggle2 = false;
 		motor[Arm2] = 0;
@@ -145,44 +147,60 @@ void Base(){
 void Lift(){
 	if(SensorValue[TwoRemote] == 1){ //If Two Remote jumper is in
 		if(vexRT[Btn8LXmtr2] == 1){ //Btn8U on second remote requests angle to top
-			ArmAngle = 0; //Insert Hang Value
+			ArmAngle = 2620; //Insert Hang Value
 			AngleToggle = true;
 		}
 		else if(vexRT[Btn8UXmtr2] == 1){ //Btn8U on second remote requests angle to Up
-			ArmAngle = 3270; //Change
+			ArmAngle = 3970; //Change
 			AngleToggle = true;
 		}
 		else if(vexRT[Btn8DXmtr2] == 1){ //Btn8D on second remote requests angle to bottom
-			ArmAngle = 1820;
+			ArmAngle = 2450;
 			AngleToggle = true;
 		}
 	}
-	else if(SensorValue[ArcadeContol] == 1){ //If 1 person mode is enabled and Arcade control is enabled
+	else if(SensorValue[ArcadeContol] == 0){ //If 1 person mode is enabled and Arcade control is enabled
 		if(vexRT[Btn7L] == 1){
-			ArmAngle = 0; //Insert Hang Value
+			ArmAngle = 3130; //Insert Hang Value
 			AngleToggle = true;
 		}
 		else if(vexRT[Btn7U] == 1){ //Btn8U brings lift up
-			ArmAngle = 3270; //Change
+			ArmAngle = 3970; //Change
 			AngleToggle = true;
 		}
 		else if(vexRT[Btn7D] == 1){ //Btn8D brings lift down
-			ArmAngle = 1820;
+			ArmAngle = 2450;
 			AngleToggle = true;
 		}
 	}
 	else{
 		if(vexRT[Btn7R] == 1){
-			ArmAngle = 0; //Insert Hang Value
+			if(holding == false){
+				holding = true;
+				ArmAngle = 2620; //Insert Hang Value
+			}
+			else
+			{
+				holding = false;
+			}
 			AngleToggle = true;
+			waitUntil(vexRT[Btn7R] == 0);
 		}
 		else if(vexRT[Btn8U] == 1){ //Btn8U brings lift up
-			ArmAngle = 3270; //Change
+			ArmAngle = 3970; //Change
 			AngleToggle = true;
 		}
 		else if(vexRT[Btn8D] == 1){ //Btn8D brings lift down
-			ArmAngle = 1820;
 			AngleToggle = true;
+			if(holding2 == false){
+				holding2 = true;
+				ArmAngle = 2450; //Insert Hang Value
+			}
+			else
+			{
+				holding2 = false;
+			}
+			waitUntil(vexRT[Btn8D] == 0);
 		}
 	}
 	//	AngleCorrect();
@@ -201,6 +219,40 @@ void Lift(){
 			motor[Arm2]= PowerCap(vexRT[Btn6D]*127 + vexRT[Btn5D]*-127);
 		}
 	}
+	if(holding == true && ArmAngle == 2620){
+		if((SensorValue[Poten1] >= ArmAngle - 40) && (SensorValue[Poten1] <= ArmAngle + 40)) { //If Potent1 matches the requested angle then finish
+			motor[Arm1] = 0;
+			motor[Arm2] = 0;
+		}
+		if(SensorValue[Poten1] <= ArmAngle - 40){ //If Poten1 is less than the request angle, raise lift
+			motor[Arm1] = 127;
+			motor[Arm2] = 127;
+		}
+		if(SensorValue[Poten1] >= ArmAngle + 40){ //If Poten1 is higher than the requested angle, lower lift
+			motor[Arm1] = -127;
+			motor[Arm2] = -127;
+		}
+	}
+	else if(ArmAngle != 2620){
+		holding = false;
+	}
+	if(holding2 == true && ArmAngle == 2450){
+		if((SensorValue[Poten1] >= ArmAngle - 40) && (SensorValue[Poten1] <= ArmAngle + 40)) { //If Potent1 matches the requested angle then finish
+			motor[Arm1] = 0;
+			motor[Arm2] = 0;
+		}
+		if(SensorValue[Poten1] <= ArmAngle - 40){ //If Poten1 is less than the request angle, raise lift
+			motor[Arm1] = 127;
+			motor[Arm2] = 127;
+		}
+		if(SensorValue[Poten1] >= ArmAngle + 40){ //If Poten1 is higher than the requested angle, lower lift
+			motor[Arm1] = -127;
+			motor[Arm2] = -127;
+		}
+	}
+	else if(ArmAngle != 2450){
+		holding2 = false;
+	}
 }
 
 void lcd(){
@@ -210,29 +262,29 @@ void lcd(){
 	}
 	else{
 		displayLCDString(0,0,batteryMain);
+	}
 }
+void Control(){
+	Base();
+	Lift();
+	lcd();
 }
-	void Control(){
-		Base();
-		Lift();
-		lcd();
-	}
 
-	void pre_auton(){
-		bStopTasksBetweenModes = true;
-	}
+void pre_auton(){
+	bStopTasksBetweenModes = true;
+}
 
-	task autonomous(){
-		AutonomousCodePlaceholderForTesting();
-	}
+task autonomous(){
+	AutonomousCodePlaceholderForTesting();
+}
 
-	task usercontrol(){
-		bLCDBacklight = true;
-		clearLCDLine(0);
-		clearLCDLine(1);
-		while (true)
-		{
-			Control();
-			Variables();
-		}
+task usercontrol(){
+	bLCDBacklight = true;
+	clearLCDLine(0);
+	clearLCDLine(1);
+	while (true)
+	{
+		Control();
+		Variables();
 	}
+}
