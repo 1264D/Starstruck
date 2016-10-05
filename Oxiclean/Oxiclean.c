@@ -142,149 +142,148 @@ void Base(){
 		motor[BackRight] = PowerCap(RightJoyMV + vexRT[Btn5U]*-100 + vexRT[Btn6U]*100);
 		//Control back right wheel using right main joystick and strafe left and right using upper bumpers
 	}
-}
 
-void Lift(){
-	if(SensorValue[TwoRemote] == 1){ //If Two Remote jumper is in
-		if(vexRT[Btn8LXmtr2] == 1){ //Btn8U on second remote requests angle to top
-			ArmAngle = 2620; //Insert Hang Value
-			AngleToggle = true;
-		}
-		else if(vexRT[Btn8UXmtr2] == 1){ //Btn8U on second remote requests angle to Up
-			ArmAngle = 3970; //Change
-			AngleToggle = true;
-		}
-		else if(vexRT[Btn8DXmtr2] == 1){ //Btn8D on second remote requests angle to bottom
-			ArmAngle = 2450;
-			AngleToggle = true;
-		}
-	}
-	else if(SensorValue[ArcadeContol] == 0){ //If 1 person mode is enabled and Arcade control is enabled
-		if(vexRT[Btn7L] == 1){
-			ArmAngle = 3130; //Insert Hang Value
-			AngleToggle = true;
-		}
-		else if(vexRT[Btn7U] == 1){ //Btn8U brings lift up
-			ArmAngle = 3970; //Change
-			AngleToggle = true;
-		}
-		else if(vexRT[Btn7D] == 1){ //Btn8D brings lift down
-			ArmAngle = 2450;
-			AngleToggle = true;
-		}
-	}
-	else{
-		if(vexRT[Btn7R] == 1){
-			if(holding == false){
-				holding = true;
+	void Lift(){
+		if(SensorValue[TwoRemote] == 1){ //If Two Remote jumper is in
+			if(vexRT[Btn8LXmtr2] == 1){ //Btn8U on second remote requests angle to top
 				ArmAngle = 2620; //Insert Hang Value
+				AngleToggle = true;
 			}
-			else
-			{
-				holding = false;
+			else if(vexRT[Btn8UXmtr2] == 1){ //Btn8U on second remote requests angle to Up
+				ArmAngle = 3970; //Change
+				AngleToggle = true;
 			}
-			AngleToggle = true;
-			waitUntil(vexRT[Btn7R] == 0);
+			else if(vexRT[Btn8DXmtr2] == 1){ //Btn8D on second remote requests angle to bottom
+				ArmAngle = 2450;
+				AngleToggle = true;
+			}
 		}
-		else if(vexRT[Btn8U] == 1){ //Btn8U brings lift up
-			ArmAngle = 3970; //Change
-			AngleToggle = true;
-		}
-		else if(vexRT[Btn8D] == 1){ //Btn8D brings lift down
-			AngleToggle = true;
-			if(holding2 == false){
-				holding2 = true;
-				ArmAngle = 2450; //Insert Hang Value
+		else if(SensorValue[ArcadeContol] == 0){ //If 1 person mode is enabled and Arcade control is enabled
+			if(vexRT[Btn7L] == 1){
+				ArmAngle = 3130; //Insert Hang Value
+				AngleToggle = true;
 			}
-			else
-			{
-				holding2 = false;
+			else if(vexRT[Btn7U] == 1){ //Btn8U brings lift up
+				ArmAngle = 3970; //Change
+				AngleToggle = true;
 			}
-			waitUntil(vexRT[Btn8D] == 0);
-		}
-	}
-	//	AngleCorrect();
-	AngleArm();
-	if(AngleToggle == false && SensorValue[TwoRemote] == 1 && AngleToggle2 == false){ //If it is not correcting or moving to presets and two person mode is enabled
-		motor[Arm1] = RightJoySV; //Control lift with 2nd remote right joystick
-		motor[Arm2] = RightJoySV;
-	}
-	else if(AngleToggle == false && AngleToggle == false){//If it is not correcting or moving to preset and one person mode is enabled
-		if(SensorValue[ArcadeContol] == 1){
-			motor[Arm1] = LeftJoyMV;
-			motor[Arm2] = LeftJoyMV;
+			else if(vexRT[Btn7D] == 1){ //Btn8D brings lift down
+				ArmAngle = 2450;
+				AngleToggle = true;
+			}
 		}
 		else{
-			motor[Arm1]= PowerCap(vexRT[Btn6D]*127 + vexRT[Btn5D]*-127); //Control lift with Btns 8U(Up) and 8D(Down)
-			motor[Arm2]= PowerCap(vexRT[Btn6D]*127 + vexRT[Btn5D]*-127);
+			if(vexRT[Btn7R] == 1){
+				if(holding == false){
+					holding = true;
+					ArmAngle = 2620; //Insert Hang Value
+				}
+				else
+				{
+					holding = false;
+				}
+				AngleToggle = true;
+				waitUntil(vexRT[Btn7R] == 0);
+			}
+			else if(vexRT[Btn8U] == 1){ //Btn8U brings lift up
+				ArmAngle = 3970; //Change
+				AngleToggle = true;
+			}
+			else if(vexRT[Btn8D] == 1){ //Btn8D brings lift down
+				AngleToggle = true;
+				if(holding2 == false){
+					holding2 = true;
+					ArmAngle = 2450; //Insert Hang Value
+				}
+				else
+				{
+					holding2 = false;
+				}
+				waitUntil(vexRT[Btn8D] == 0);
+			}
+		}
+		//	AngleCorrect();
+		AngleArm();
+		if(AngleToggle == false && SensorValue[TwoRemote] == 1 && AngleToggle2 == false){ //If it is not correcting or moving to presets and two person mode is enabled
+			motor[Arm1] = RightJoySV; //Control lift with 2nd remote right joystick
+			motor[Arm2] = RightJoySV;
+		}
+		else if(AngleToggle == false && AngleToggle == false){//If it is not correcting or moving to preset and one person mode is enabled
+			if(SensorValue[ArcadeContol] == 1){
+				motor[Arm1] = LeftJoyMV;
+				motor[Arm2] = LeftJoyMV;
+			}
+			else{
+				motor[Arm1]= PowerCap(vexRT[Btn6D]*127 + vexRT[Btn5D]*-127); //Control lift with Btns 8U(Up) and 8D(Down)
+				motor[Arm2]= PowerCap(vexRT[Btn6D]*127 + vexRT[Btn5D]*-127);
+			}
+		}
+		if(holding == true && ArmAngle == 2620){
+			if((SensorValue[Poten1] >= ArmAngle - 40) && (SensorValue[Poten1] <= ArmAngle + 40)) { //If Potent1 matches the requested angle then finish
+				motor[Arm1] = 0;
+				motor[Arm2] = 0;
+			}
+			if(SensorValue[Poten1] <= ArmAngle - 40){ //If Poten1 is less than the request angle, raise lift
+				motor[Arm1] = 127;
+				motor[Arm2] = 127;
+			}
+			if(SensorValue[Poten1] >= ArmAngle + 40){ //If Poten1 is higher than the requested angle, lower lift
+				motor[Arm1] = -127;
+				motor[Arm2] = -127;
+			}
+		}
+		else if(ArmAngle != 2620){
+			holding = false;
+		}
+		if(holding2 == true && ArmAngle == 2450){
+			if((SensorValue[Poten1] >= ArmAngle - 40) && (SensorValue[Poten1] <= ArmAngle + 40)) { //If Potent1 matches the requested angle then finish
+				motor[Arm1] = 0;
+				motor[Arm2] = 0;
+			}
+			if(SensorValue[Poten1] <= ArmAngle - 40){ //If Poten1 is less than the request angle, raise lift
+				motor[Arm1] = 127;
+				motor[Arm2] = 127;
+			}
+			if(SensorValue[Poten1] >= ArmAngle + 40){ //If Poten1 is higher than the requested angle, lower lift
+				motor[Arm1] = -127;
+				motor[Arm2] = -127;
+			}
+		}
+		else if(ArmAngle != 2450){
+			holding2 = false;
 		}
 	}
-	if(holding == true && ArmAngle == 2620){
-		if((SensorValue[Poten1] >= ArmAngle - 40) && (SensorValue[Poten1] <= ArmAngle + 40)) { //If Potent1 matches the requested angle then finish
-			motor[Arm1] = 0;
-			motor[Arm2] = 0;
-		}
-		if(SensorValue[Poten1] <= ArmAngle - 40){ //If Poten1 is less than the request angle, raise lift
-			motor[Arm1] = 127;
-			motor[Arm2] = 127;
-		}
-		if(SensorValue[Poten1] >= ArmAngle + 40){ //If Poten1 is higher than the requested angle, lower lift
-			motor[Arm1] = -127;
-			motor[Arm2] = -127;
-		}
-	}
-	else if(ArmAngle != 2620){
-		holding = false;
-	}
-	if(holding2 == true && ArmAngle == 2450){
-		if((SensorValue[Poten1] >= ArmAngle - 40) && (SensorValue[Poten1] <= ArmAngle + 40)) { //If Potent1 matches the requested angle then finish
-			motor[Arm1] = 0;
-			motor[Arm2] = 0;
-		}
-		if(SensorValue[Poten1] <= ArmAngle - 40){ //If Poten1 is less than the request angle, raise lift
-			motor[Arm1] = 127;
-			motor[Arm2] = 127;
-		}
-		if(SensorValue[Poten1] >= ArmAngle + 40){ //If Poten1 is higher than the requested angle, lower lift
-			motor[Arm1] = -127;
-			motor[Arm2] = -127;
-		}
-	}
-	else if(ArmAngle != 2450){
-		holding2 = false;
-	}
-}
 
-void lcd(){
-	batteryMain = (nImmediateBatteryLevel/1000.);
-	if(nLCDButtons ==7){
-		displayLCDString(1,0,"Let's go bowling");
+	void lcd(){
+		batteryMain = (nImmediateBatteryLevel/1000.);
+		if(nLCDButtons ==7){
+			displayLCDString(1,0,"Let's go bowling");
+		}
+		else{
+			displayLCDString(0,0,batteryMain);
+		}
 	}
-	else{
-		displayLCDString(0,0,batteryMain);
+	void Control(){
+		Base();
+		Lift();
+		lcd();
 	}
-}
-void Control(){
-	Base();
-	Lift();
-	lcd();
-}
 
-void pre_auton(){
-	bStopTasksBetweenModes = true;
-}
-
-task autonomous(){
-	AutonomousCodePlaceholderForTesting();
-}
-
-task usercontrol(){
-	bLCDBacklight = true;
-	clearLCDLine(0);
-	clearLCDLine(1);
-	while (true)
-	{
-		Control();
-		Variables();
+	void pre_auton(){
+		bStopTasksBetweenModes = true;
 	}
-}
+
+	task autonomous(){
+		AutonomousCodePlaceholderForTesting();
+	}
+
+	task usercontrol(){
+		bLCDBacklight = true;
+		clearLCDLine(0);
+		clearLCDLine(1);
+		while (true)
+		{
+			Control();
+			Variables();
+		}
+	}
