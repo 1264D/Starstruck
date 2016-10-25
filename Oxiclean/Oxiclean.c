@@ -3,7 +3,7 @@
 #pragma config(Sensor, in2,    Poten2,         sensorPotentiometer)
 #pragma config(Sensor, dgtl1,  TwoRemote,      sensorTouch)
 #pragma config(Sensor, dgtl2,  ArcadeContol,   sensorTouch)
-#pragma config(Sensor, dgtl3,  ,               sensorTouch)
+#pragma config(Sensor, dgtl3,  Robert,         sensorTouch)
 #pragma config(Sensor, dgtl4,  ,               sensorTouch)
 #pragma config(Sensor, dgtl5,  ,               sensorTouch)
 #pragma config(Sensor, dgtl6,  ,               sensorTouch)
@@ -49,6 +49,7 @@ int LeftJoyMH; //Main Left X
 int LeftJoySH; //Partner Left X
 int RightJoyMH; //Main Right X
 int RightJoySH; //Partner Right X
+int holdingAngle;
 string batteryMain;
 string batteryPowerExpander;
 
@@ -74,18 +75,18 @@ int PowerCap(int motorPower){ //intake joystick position
 	}
 }
 
-void holding(){
+void holdings(){
 	if(vexRT[Btn8R] == true){
-	if(holding == true){
-		holding = false;
-		waitUntil(vexRT[Btn8R] == false);
+		if(holding == true){
+			holding = false;
+			waitUntil(vexRT[Btn8R] == false);
+		}
+		else{
+			holding = true;
+			holdingAngle = SensorValue[Poten1];
+			waitUntil(vexRT[Btn8R] == false);
+		}
 	}
-	else{
-		holding = true;
-		holdingAngle = SensorValue[Poten1];
-		waitUntil(vexRT[Btn8R] == false);
-	}
-}
 	if(holding == true){
 		if((SensorValue[Poten1] >= holdingAngle - 40) && (SensorValue[Poten1] <= holdingAngle + 40)) { //If Potent1 matches the requested angle then finish
 			motor[Arm1] = 0;
@@ -105,164 +106,120 @@ void holding(){
 
 
 void Variables(){
-RightJoyMV = JoyClear(vexRT[Ch2]);
-RightJoySV = JoyClear(vexRT[Ch2Xmtr2]);
-LeftJoyMV = JoyClear(vexRT[Ch3]);
-LeftJoySV = JoyClear(vexRT[Ch3Xmtr2]);
-RightJoyMH = JoyClear(vexRT[Ch1]);
-RightJoySH = JoyClear(vexRT[Ch1Xmtr2]);
-LeftJoyMH = JoyClear(vexRT[Ch4]);
-LeftJoySH = JoyClear(vexRT[Ch4Xmtr2]);
-//Configure joysticks for deidling
+	RightJoyMV = JoyClear(vexRT[Ch2]);
+	RightJoySV = JoyClear(vexRT[Ch2Xmtr2]);
+	LeftJoyMV = JoyClear(vexRT[Ch3]);
+	LeftJoySV = JoyClear(vexRT[Ch3Xmtr2]);
+	RightJoyMH = JoyClear(vexRT[Ch1]);
+	RightJoySH = JoyClear(vexRT[Ch1Xmtr2]);
+	LeftJoyMH = JoyClear(vexRT[Ch4]);
+	LeftJoySH = JoyClear(vexRT[Ch4Xmtr2]);
+	//Configure joysticks for deidling
 }
 
 void AngleCorrect(){
-RealAngle = SensorValue[Poten2] - 550; //convertpoteniometer2
-if((RealAngle >= (SensorValue[Poten1] - 40)) && (RealAngle <= (SensorValue[Poten1] + 40)) && AngleToggle2 == true){ //If the Poten1 matches Poten2 then disable
-	AngleToggle2 = false;
-	motor[Arm2] = 0;
-}
-else if((RealAngle <= (SensorValue[Poten1] - 40))){ //If Poten2 is lower then Poten1 then raise Poten2
-	AngleToggle2 = true;
-	motor[Arm2] = 66;
-}
-else if((RealAngle >= (SensorValue[Poten1] + 40))){ //If Poten2 is higher then Poten1 then lower Poten2
-	AngleToggle2 = true;
-	motor[Arm2] = -66;
-}
+	RealAngle = SensorValue[Poten2] - 550; //convertpoteniometer2
+	if((RealAngle >= (SensorValue[Poten1] - 40)) && (RealAngle <= (SensorValue[Poten1] + 40)) && AngleToggle2 == true){ //If the Poten1 matches Poten2 then disable
+		AngleToggle2 = false;
+		motor[Arm2] = 0;
+	}
+	else if((RealAngle <= (SensorValue[Poten1] - 40))){ //If Poten2 is lower then Poten1 then raise Poten2
+		AngleToggle2 = true;
+		motor[Arm2] = 66;
+	}
+	else if((RealAngle >= (SensorValue[Poten1] + 40))){ //If Poten2 is higher then Poten1 then lower Poten2
+		AngleToggle2 = true;
+		motor[Arm2] = -66;
+	}
 }
 
 void AngleArm(){
-if(AngleToggle == true){
-	if((SensorValue[Poten1] >= ArmAngle - 40) && (SensorValue[Poten1] <= ArmAngle + 40)) { //If Potent1 matches the requested angle then finish
-		motor[Arm1] = 0;
-		motor[Arm2] = 0;
-		AngleToggle = false;
+	if(AngleToggle == true){
+		if((SensorValue[Poten1] >= ArmAngle - 40) && (SensorValue[Poten1] <= ArmAngle + 40)) { //If Potent1 matches the requested angle then finish
+			motor[Arm1] = 0;
+			motor[Arm2] = 0;
+			AngleToggle = false;
+		}
+		if(SensorValue[Poten1] <= ArmAngle - 40){ //If Poten1 is less than the request angle, raise lift
+			motor[Arm1] = 127;
+			motor[Arm2] = 127;
+		}
+		if(SensorValue[Poten1] >= ArmAngle + 40){ //If Poten1 is higher than the requested angle, lower lift
+			motor[Arm1] = -127;
+			motor[Arm2] = -127;
+		}
 	}
-	if(SensorValue[Poten1] <= ArmAngle - 40){ //If Poten1 is less than the request angle, raise lift
-		motor[Arm1] = 127;
-		motor[Arm2] = 127;
-	}
-	if(SensorValue[Poten1] >= ArmAngle + 40){ //If Poten1 is higher than the requested angle, lower lift
-		motor[Arm1] = -127;
-		motor[Arm2] = -127;
-	}
-}
 }
 
 void Base(){
-if(SensorValue[ArcadeContol] == 1){
-	motor[FrontLeft] = PowerCap(RightJoyMV + RightJoyMH + vexRT[Btn5U]*120 + vexRT[Btn6U]*-120 + vexRT[Btn5D]*40 + vexRT[Btn6D]*-40);
-	motor[FrontRight] = PowerCap(RightJoyMV + -RightJoyMH + vexRT[Btn5U]*-120 + vexRT[Btn6U]*120 + vexRT[Btn5D]*-40 + vexRT[Btn6D]*40);
-	motor[BackLeft] = PowerCap(RightJoyMV + -RightJoyMH + vexRT[Btn5U]*120 + vexRT[Btn6U]*-120 + vexRT[Btn5D]*-40 + vexRT[Btn6D]*40);
-	motor[BackRight] = PowerCap(RightJoyMV + RightJoyMH + vexRT[Btn5U]*-120 + vexRT[Btn6U]*120 + vexRT[Btn5D]*40 + vexRT[Btn6D]*-40);
-	//Control Drive using horizontal and vertical axes and upper bumbers for quick turn and lower for percise turn
-	//Left bumpers turns counter clockwise and right bumpers turn clockwise
-}
-else{
-	motor[FrontLeft] = PowerCap(LeftJoyMV + vexRT[Btn5U]*-100 + vexRT[Btn6U]*100);
-	//Control front left wheel using left main joystick and strafe left and strafe right using upper bumpers
-	motor[FrontRight] = PowerCap(RightJoyMV + vexRT[Btn5U]*100 + vexRT[Btn6U]*-100);
-	//Control front right wheel using right main joystick and strafe left and right using upper bumpers
-	motor[BackLeft] = PowerCap(LeftJoyMV + vexRT[Btn5U]*100 + vexRT[Btn6U]*-100);
-	//Control back left wheel using left main joystick and strafe left and right using upper bumpers
-	motor[BackRight] = PowerCap(RightJoyMV + vexRT[Btn5U]*-100 + vexRT[Btn6U]*100);
-	//Control back right wheel using right main joystick and strafe left and right using upper bumpers
-}
+	if(SensorValue[ArcadeContol] == 1){
+		motor[FrontLeft] = PowerCap(RightJoyMV + RightJoyMH + vexRT[Btn5U]*120 + vexRT[Btn6U]*-120 + vexRT[Btn5D]*40 + vexRT[Btn6D]*-40);
+		motor[FrontRight] = PowerCap(RightJoyMV + -RightJoyMH + vexRT[Btn5U]*-120 + vexRT[Btn6U]*120 + vexRT[Btn5D]*-40 + vexRT[Btn6D]*40);
+		motor[BackLeft] = PowerCap(RightJoyMV + -RightJoyMH + vexRT[Btn5U]*120 + vexRT[Btn6U]*-120 + vexRT[Btn5D]*-40 + vexRT[Btn6D]*40);
+		motor[BackRight] = PowerCap(RightJoyMV + RightJoyMH + vexRT[Btn5U]*-120 + vexRT[Btn6U]*120 + vexRT[Btn5D]*40 + vexRT[Btn6D]*-40);
+		//Control Drive using horizontal and vertical axes and upper bumbers for quick turn and lower for percise turn
+		//Left bumpers turns counter clockwise and right bumpers turn clockwise
+	}
+	else{
+		motor[FrontLeft] = PowerCap(LeftJoyMV + vexRT[Btn5U]*-100 + vexRT[Btn6U]*100);
+		//Control front left wheel using left main joystick and strafe left and strafe right using upper bumpers
+		motor[FrontRight] = PowerCap(RightJoyMV + vexRT[Btn5U]*100 + vexRT[Btn6U]*-100);
+		//Control front right wheel using right main joystick and strafe left and right using upper bumpers
+		motor[BackLeft] = PowerCap(LeftJoyMV + vexRT[Btn5U]*100 + vexRT[Btn6U]*-100);
+		//Control back left wheel using left main joystick and strafe left and right using upper bumpers
+		motor[BackRight] = PowerCap(RightJoyMV + vexRT[Btn5U]*-100 + vexRT[Btn6U]*100);
+		//Control back right wheel using right main joystick and strafe left and right using upper bumpers
+	}
 }
 
 void Lift(){
-if(SensorValue[TwoRemote] == 1){ //If Two Remote jumper is in
-	if(vexRT[Btn8LXmtr2] == 1){ //Btn8U on second remote requests angle to top
-		ArmAngle = 2620; //Insert Hang Value
-		AngleToggle = true;
+	//	AngleCorrect();
+	AngleArm();
+	if(AngleToggle == false && SensorValue[TwoRemote] == 1 && AngleToggle2 == false){ //If it is not correcting or moving to presets and two person mode is enabled
+		motor[Arm1] = RightJoySV; //Control lift with 2nd remote right joystick
+		motor[Arm2] = RightJoySV;
 	}
-	else if(vexRT[Btn8UXmtr2] == 1){ //Btn8U on second remote requests angle to Up
-		ArmAngle = 3970; //Change
-		AngleToggle = true;
+	else if(AngleToggle == false && AngleToggle2 == false){//If it is not correcting or moving to preset and one person mode is enabled
+		if(SensorValue[ArcadeContol] == 1){
+			motor[Arm1] = LeftJoyMV;
+			motor[Arm2] = LeftJoyMV;
+		}
+		else{
+			motor[Arm1]= PowerCap(vexRT[Btn6D]*100 + vexRT[Btn5D]*-100); //Control lift with Bottom bumpers
+			motor[Arm2]= PowerCap(vexRT[Btn6D]*100 + vexRT[Btn5D]*-100);
+		}
 	}
-	else if(vexRT[Btn8DXmtr2] == 1){ //Btn8D on second remote requests angle to bottom
-		ArmAngle = 2450;
-		AngleToggle = true;
-	}
-}
-else if(SensorValue[ArcadeContol] == 1){ //If 1 person mode is enabled and Arcade control is enabled
-	if(vexRT[Btn8L] == 1){
-		ArmAngle = 3130; //Insert Hang Value
-		AngleToggle = true;
-	}
-	else if(vexRT[Btn8U] == 1){ //Btn8U brings lift up
-		ArmAngle = 3970; //Change
-		AngleToggle = true;
-	}
-	else if(vexRT[Btn8D] == 1){ //Btn8D brings lift down
-		ArmAngle = 2450;
-		AngleToggle = true;
-	}
-}
-else{
-	if(vexRT[Btn8L] == 1){
-		ArmAngle = 2620; //Insert Hang Value
-		AngleToggle = true;
-	}
-
-	else if(vexRT[Btn8U] == 1){ //Btn8U brings lift up
-		ArmAngle = 3970; //Change
-		AngleToggle = true;
-	}
-	else if(vexRT[Btn8D] == 1){ //Btn8D brings lift down
-		AngleToggle = true;
-		ArmAngle = 2450; //Insert Hang Value
-	}
-}
-
-//	AngleCorrect();
-AngleArm();
-if(AngleToggle == false && SensorValue[TwoRemote] == 1 && AngleToggle2 == false){ //If it is not correcting or moving to presets and two person mode is enabled
-	motor[Arm1] = RightJoySV; //Control lift with 2nd remote right joystick
-	motor[Arm2] = RightJoySV;
-}
-else if(AngleToggle == false && AngleToggle2 == false){//If it is not correcting or moving to preset and one person mode is enabled
-	if(SensorValue[ArcadeContol] == 1){
-		motor[Arm1] = LeftJoyMV;
-		motor[Arm2] = LeftJoyMV;
-	}
-	else{
-		motor[Arm1]= PowerCap(vexRT[Btn6D]*127 + vexRT[Btn5D]*-127); //Control lift with Bottom bumpers
-		motor[Arm2]= PowerCap(vexRT[Btn6D]*127 + vexRT[Btn5D]*-127);
-	}
-}
 }
 void lcd(){
-batteryMain = (nImmediateBatteryLevel/1000.);
-if(nLCDButtons ==7){
-	displayLCDString(1,0,"Let's go bowling");
-}
-else{
-	displayLCDString(0,0,batteryMain);
-}
+	batteryMain = (nImmediateBatteryLevel/1000.);
+	if(nLCDButtons ==7){
+		displayLCDString(1,0,"Let's go bowling");
+	}
+	else{
+		displayLCDString(0,0,batteryMain);
+	}
 }
 void Control(){
-Base();
-Lift();
-lcd();
+	Base();
+	Lift();
+	lcd();
 }
 
 void pre_auton(){
-bStopTasksBetweenModes = true;
+	bStopTasksBetweenModes = true;
 }
 
 task autonomous(){
-AutonomousCodePlaceholderForTesting();
+	AutonomousCodePlaceholderForTesting();
 }
 
 task usercontrol(){
-bLCDBacklight = true;
-clearLCDLine(0);
-clearLCDLine(1);
-while (true)
-{
-	Control();
-	Variables();
-}
+	bLCDBacklight = true;
+	clearLCDLine(0);
+	clearLCDLine(1);
+	while (true)
+	{
+		Control();
+		Variables();
+	}
 }
