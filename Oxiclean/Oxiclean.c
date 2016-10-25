@@ -39,7 +39,6 @@
 int ArmAngle; //Preset angles
 bool AngleToggle; //Disables lift while moving to presets
 bool AngleToggle2; //Disables lift while correcting
-bool holding;
 int RealAngle; //Converts 2nd Potentiometer value to 1st
 int RightJoyMV; //Main Right Y
 int RightJoySV; //Partner Right Y
@@ -49,7 +48,6 @@ int LeftJoyMH; //Main Left X
 int LeftJoySH; //Partner Left X
 int RightJoyMH; //Main Right X
 int RightJoySH; //Partner Right X
-int holdingAngle;
 string batteryMain;
 string batteryPowerExpander;
 
@@ -74,37 +72,6 @@ int PowerCap(int motorPower){ //intake joystick position
 		return -127;
 	}
 }
-
-void holdings(){
-	if(vexRT[Btn8R] == true){
-		if(holding == true){
-			holding = false;
-			waitUntil(vexRT[Btn8R] == false);
-		}
-		else{
-			holding = true;
-			holdingAngle = SensorValue[Poten1];
-			waitUntil(vexRT[Btn8R] == false);
-		}
-	}
-	if(holding == true){
-		if((SensorValue[Poten1] >= holdingAngle - 40) && (SensorValue[Poten1] <= holdingAngle + 40)) { //If Potent1 matches the requested angle then finish
-			motor[Arm1] = 0;
-			motor[Arm2] = 0;
-		}
-		if(SensorValue[Poten1] <= holdingAngle - 40){ //If Poten1 is less than the request angle, raise lift
-			motor[Arm1] = 127;
-			motor[Arm2] = 127;
-		}
-		if(SensorValue[Poten1] >= holdingAngle + 40){ //If Poten1 is higher than the requested angle, lower lift
-			motor[Arm1] = -127;
-			motor[Arm2] = -127;
-		}
-	}
-}
-
-
-
 void Variables(){
 	RightJoyMV = JoyClear(vexRT[Ch2]);
 	RightJoySV = JoyClear(vexRT[Ch2Xmtr2]);
@@ -208,9 +175,97 @@ void Control(){
 void pre_auton(){
 	bStopTasksBetweenModes = true;
 }
+void autonomouse(){
+	while((SensorValue[I2C_1] <= 80) && (SensorValue[I2C_2] >= -80)){//Forward
+		motor[BackLeft] = 127;
+		motor[BackRight] = 127;
+		motor[FrontLeft] = 127;
+		motor[FrontRight] = 127;
+	}
+	while((SensorValue[I2C_1] >= -240) && (SensorValue[I2C_2] <= 240)){//Back
+		motor[BackLeft] = -127;
+		motor[BackRight] = -127;
+		motor[FrontLeft] = -127;
+		motor[FrontRight] = -127;
+	}//Knocks dump down
+	while((SensorValue[I2C_1] <= 450) && (SensorValue[I2C_2] >= -450)){ //Forward to pick up star
+		motor[BackLeft] = 127;
+		motor[BackRight] = 127;
+		motor[FrontLeft] = 127;
+		motor[FrontRight] = 127;
+	}
+	while((SensorValue[I2C_1] >= 440) && (SensorValue[I2C_2] <= -440)){//Back to get away from wall to be able to raise lift
+		motor[BackLeft] = -127;
+		motor[BackRight] = -127;
+		motor[FrontLeft] = -127;
+		motor[FrontRight] = -127;
+	}
+	motor[BackLeft] = 0;//Stop moving
+	motor[BackRight] = 0;
+	motor[FrontLeft] = 0;
+	motor[FrontRight] = 0;
+	while(SensorValue[Poten1] <= 440){ //Lift Arm
+		motor[Arm1] = 127;
+		motor[Arm2] = 127;
+	}
+	motor[Arm1] = 0;//Stop arm
+	motor[Arm2] = 0;
+	/*	while((SensorValue[I2C_1] <= 450) && (SensorValue[I2C_2] >= -450)){ //Turn to face back field
+	motor[BackLeft] = -127;
+	motor[BackRight] = 127;
+	motor[FrontLeft] = -127;
+	motor[FrontRight] = 127;
+	}*/
+	/*	while((SensorValue[I2C_1] <= 450) && (SensorValue[I2C_2] >= -450)){ //Back up into center wall
+	motor[BackLeft] = -127;
+	motor[BackRight] = -127;
+	motor[FrontLeft] = -127;
+	motor[FrontRight] = -127;
+	}*/
+	/*	while(SensorValue[Poten1] <= 440){ //Lift Arm to dump
+	motor[Arm1] = 127;
+	motor[Arm2] = 127;
+	}*/
+	/*while(SensorValue[Poten1] <= 440){ //Lower Arm
+	motor[Arm1] = -127;
+	motor[Arm2] = -127;
+	}*/
+	/*	while((SensorValue[I2C_1] <= 450) && (SensorValue[I2C_2] >= -450)){ //Turn left
+	motor[BackLeft] = -127;
+	motor[BackRight] = 127;
+	motor[FrontLeft] = -127;
+	motor[FrontRight] = 127;
+	}*/
+	/*	while(SensorValue[Poten1] <= 440){ //Lift Arm to knock
+	motor[Arm1] = 127;
+	motor[Arm2] = 127;
+	}*/
+	/*while(SensorValue[Poten1] <= 440){ //Lower Arm
+	motor[Arm1] = -127;
+	motor[Arm2] = -127;
+	}*/
+	/*while((SensorValue[I2C_1] <= 450) && (SensorValue[I2C_2] >= -450)){ //Forward
+		motor[BackLeft] = 127;
+		motor[BackRight] = 127;
+		motor[FrontLeft] = 127;
+		motor[FrontRight] = 127;
+	}*
+	/*	while(SensorValue[Poten1] <= 440){ //Lift Arm to knock
+	motor[Arm1] = 127;
+	motor[Arm2] = 127;
+	}*/
+	/*while(SensorValue[Poten1] <= 440){ //Lower Arm
+	motor[Arm1] = -127;
+	motor[Arm2] = -127;
+	}*/
+	motor[BackLeft] = 0;
+	motor[BackRight] = 0;
+	motor[FrontLeft] = 0;
+	motor[FrontRight] = 0;
+}
 
 task autonomous(){
-	AutonomousCodePlaceholderForTesting();
+	autonomouse();
 }
 
 task usercontrol(){
