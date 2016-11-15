@@ -4,7 +4,7 @@
 #pragma config(Sensor, dgtl1,  TwoRemote,      sensorTouch)
 #pragma config(Sensor, dgtl2,  ArcadeContol,   sensorTouch)
 #pragma config(Sensor, dgtl3,  Robert,         sensorTouch)
-#pragma config(Sensor, dgtl4,  ,               sensorTouch)
+#pragma config(Sensor, dgtl4,  ProgrammingSkills,               sensorTouch)
 #pragma config(Sensor, dgtl5,  ,               sensorTouch)
 #pragma config(Sensor, dgtl6,  ,               sensorTouch)
 #pragma config(Sensor, dgtl7,  LiftLimit,      sensorTouch)
@@ -50,8 +50,8 @@ int LeftJoyMH; //Main Left X
 int LeftJoySH; //Partner Left X
 int RightJoyMH; //Main Right X
 int RightJoySH; //Partner Right X
-string batteryMain;
-string batteryPowerExpander;
+string batteryMain; //String for lcd
+string batteryPowerExpander; //String for lcd
 
 int JoyClear(int origVal) { //intake current joystick position
 	if(abs(origVal) < 10){ // if joystick is close to still just return 0
@@ -102,24 +102,6 @@ void AngleCorrect(){
 	}
 }
 
-void AngleArm(){
-	if(AngleToggle == true){
-		if((SensorValue[Poten1] >= ArmAngle - 40) && (SensorValue[Poten1] <= ArmAngle + 40)) { //If Potent1 matches the requested angle then finish
-			motor[Arm1] = 0;
-			motor[Arm2] = 0;
-			AngleToggle = false;
-		}
-		if(SensorValue[Poten1] <= ArmAngle - 40){ //If Poten1 is less than the request angle, raise lift
-			motor[Arm1] = 127;
-			motor[Arm2] = 127;
-		}
-		if(SensorValue[Poten1] >= ArmAngle + 40){ //If Poten1 is higher than the requested angle, lower lift
-			motor[Arm1] = -127;
-			motor[Arm2] = -127;
-		}
-	}
-}
-
 void Base(){
 	if(SensorValue[ArcadeContol] == 1){
 		motor[FrontLeft] = PowerCap(RightJoyMV + RightJoyMH + vexRT[Btn5U]*120 + vexRT[Btn6U]*-120 + vexRT[Btn5D]*40 + vexRT[Btn6D]*-40);
@@ -143,12 +125,11 @@ void Base(){
 
 void Lift(){
 	//	AngleCorrect();
-	AngleArm();
-	if(AngleToggle == false && SensorValue[TwoRemote] == 1 && AngleToggle2 == false){ //If it is not correcting or moving to presets and two person mode is enabled
+	if(SensorValue[TwoRemote] == 1 && AngleToggle2 == false){ //If it is not correcting or moving to presets and two person mode is enabled
 		motor[Arm1] = RightJoySV; //Control lift with 2nd remote right joystick
 		motor[Arm2] = RightJoySV;
 	}
-	else if(AngleToggle == false && AngleToggle2 == false){//If it is not correcting or moving to preset and one person mode is enabled
+	else if(AngleToggle2 == false){//If it is not correcting or moving to preset and one person mode is enabled
 		if(SensorValue[ArcadeContol] == 1){
 			motor[Arm1] = LeftJoyMV;
 			motor[Arm2] = LeftJoyMV;
@@ -174,27 +155,27 @@ void Control(){
 	lcd();
 }
 
-void pre_auton(){
+void pre_auton(){ //Do not touch
 	bStopTasksBetweenModes = true;
 }
-void autonL(){
-	autonMoveL = SensorValue[I2C_1];
+void autonL(){ //auton starting on left tile
+	autonMoveL = SensorValue[I2C_1]; //reset encoder values
 	autonMoveR = SensorValue[I2C_2];
 	while((SensorValue[I2C_1] - autonMoveL <= 80) && (SensorValue[I2C_2] - autonMoveR >= -80)){//Forward
 		motor[BackLeft] = 127;
 		motor[BackRight] = 127;
 		motor[FrontLeft] = 127;
 		motor[FrontRight] = 127;
-	}
+	} // The main way this motion works is measuring the difference in the original encoder value and the current value
 	autonMoveL = SensorValue[I2C_1];
-	autonMoveR = SensorValue[I2C_2];
+	autonMoveR = SensorValue[I2C_2];//reset
 	while((SensorValue[I2C_1] - autonMoveL >= -300) && (SensorValue[I2C_2] - autonMoveR <= 300)){//Back
 		motor[BackLeft] = -127;
 		motor[BackRight] = -127;
 		motor[FrontLeft] = -127;
 		motor[FrontRight] = -127;
 	}//Knocks dump down
-	autonMoveL = SensorValue[I2C_1];
+	autonMoveL = SensorValue[I2C_1];//reset
 	autonMoveR = SensorValue[I2C_2];
 	while((SensorValue[I2C_1] - autonMoveL <= 200) && (SensorValue[I2C_2] - autonMoveR >= -200)){ //Forward to pick up star
 		motor[BackLeft] = 127;
@@ -212,7 +193,7 @@ void autonL(){
 	}
 	motor[Arm1] = 0;//Stop arm
 	motor[Arm2] = 0;
-	autonMoveL = SensorValue[I2C_1];
+	autonMoveL = SensorValue[I2C_1];//reset
 	autonMoveR = SensorValue[I2C_2];
 	while((SensorValue[I2C_1] - autonMoveL >= -935) && (SensorValue[I2C_2] - autonMoveR >= -935)){ //Turn to face back field
 		motor[BackLeft] = -127;
@@ -221,7 +202,7 @@ void autonL(){
 		motor[FrontRight] = 127;
 	}
 	autonMoveL = SensorValue[I2C_1];
-	autonMoveR = SensorValue[I2C_2];
+	autonMoveR = SensorValue[I2C_2];//reset
 	while((SensorValue[I2C_1] - autonMoveL >= -2200) && (SensorValue[I2C_2] - autonMoveR <= 2200)){ //Back up into center wall
 		motor[BackLeft] = -127;
 		motor[BackRight] = -127;
@@ -238,14 +219,14 @@ void autonL(){
 	}
 	motor[Arm1] = 0;
 	motor[Arm2] = 0;
-	wait1Msec(750);
+	wait1Msec(750);//give time for momentum
 	while(SensorValue[Poten2] <= 2800){ //Lower Arm
 		motor[Arm1] = -127;
 		motor[Arm2] = -127;
 	}
 	motor[Arm1] = 0;
 	motor[Arm2] = 0;
-	autonMoveL = SensorValue[I2C_1];
+	autonMoveL = SensorValue[I2C_1]; //reset
 	autonMoveR = SensorValue[I2C_2];
 	while((SensorValue[I2C_1] - autonMoveL >= -875) && (SensorValue[I2C_2] - autonMoveR <= 875)){ //Turn left
 		motor[BackLeft] = -127;
@@ -274,8 +255,8 @@ void autonL(){
 	motor[FrontRight] = 0;
 }
 
-void autonR(){
-	autonMoveL = SensorValue[I2C_1];
+void autonR(){//Right autonomous
+	autonMoveL = SensorValue[I2C_1];//reset
 	autonMoveR = SensorValue[I2C_2];
 	while((SensorValue[I2C_1] - autonMoveL <= 80) && (SensorValue[I2C_2] - autonMoveR >= -80)){//Forward
 		motor[BackLeft] = 127;
@@ -283,7 +264,7 @@ void autonR(){
 		motor[FrontLeft] = 127;
 		motor[FrontRight] = 127;
 	}
-	autonMoveL = SensorValue[I2C_1];
+	autonMoveL = SensorValue[I2C_1];//reset
 	autonMoveR = SensorValue[I2C_2];
 	while((SensorValue[I2C_1] - autonMoveL >= -200) && (SensorValue[I2C_2] - autonMoveR <= 200)){//Back
 		motor[BackLeft] = -127;
@@ -291,7 +272,7 @@ void autonR(){
 		motor[FrontLeft] = -127;
 		motor[FrontRight] = -127;
 	}//Knocks dump down
-	autonMoveL = SensorValue[I2C_1];
+	autonMoveL = SensorValue[I2C_1];//reset
 	autonMoveR = SensorValue[I2C_2];
 	while((SensorValue[I2C_1] - autonMoveL <= 200) && (SensorValue[I2C_2] - autonMoveR >= -200)){ //Forward to pick up star
 		motor[BackLeft] = 127;
@@ -309,7 +290,7 @@ void autonR(){
 	}
 	motor[Arm1] = 0;//Stop arm
 	motor[Arm2] = 0;
-	autonMoveL = SensorValue[I2C_1];
+	autonMoveL = SensorValue[I2C_1];//reset
 	autonMoveR = SensorValue[I2C_2];
 	while((SensorValue[I2C_1] - autonMoveL <= 935) && (SensorValue[I2C_2] - autonMoveR <= 935)){ //Turn to face back field
 		motor[BackLeft] = -127;
@@ -317,7 +298,7 @@ void autonR(){
 		motor[FrontLeft] = -127;
 		motor[FrontRight] = 127;
 	}
-	autonMoveL = SensorValue[I2C_1];
+	autonMoveL = SensorValue[I2C_1];//reset
 	autonMoveR = SensorValue[I2C_2];
 	while((SensorValue[I2C_1] - autonMoveL >= -2200) && (SensorValue[I2C_2] - autonMoveR <= 2200)){ //Back up into center wall
 		motor[BackLeft] = -127;
@@ -368,12 +349,212 @@ void autonR(){
 	motor[FrontLeft] = 0;
 	motor[FrontRight] = 0;
 }
+
+void programskills(){
+	autonMoveL = SensorValue[I2C_1];
+	autonMoveR = SensorValue[I2C_2];
+	while((SensorValue[I2C_1] - autonMoveL <= 80) && (SensorValue[I2C_2] - autonMoveR >= -80)){//Forward
+		motor[BackLeft] = 127;
+		motor[BackRight] = 127;
+		motor[FrontLeft] = 127;
+		motor[FrontRight] = 127;
+	}
+	autonMoveL = SensorValue[I2C_1];
+	autonMoveR = SensorValue[I2C_2];
+	while((SensorValue[I2C_1] - autonMoveL >= -700) && (SensorValue[I2C_2] - autonMoveR <= 700)){//Back
+		motor[BackLeft] = -127;
+		motor[BackRight] = -127;
+		motor[FrontLeft] = -127;
+		motor[FrontRight] = -127;
+	}//Knocks dump down
+	motor[BackLeft] = 0;
+	motor[BackRight] = 0;
+	motor[FrontLeft] = 0;
+	motor[FrontRight] = 0;
+	wait1Msec(10000);
+	while(SensorValue[Poten2] >= 2200){ //Lift Arm
+		motor[Arm1] = 127;
+		motor[Arm2] = 127;
+	}
+	motor[Arm1] = 0;//Stop arm
+	motor[Arm2] = 0;
+	autonMoveL = SensorValue[I2C_1];
+	autonMoveR = SensorValue[I2C_2];
+	while((SensorValue[I2C_1] - autonMoveL >= -1400) && (SensorValue[I2C_2] - autonMoveR <= 1400)){ //Back up into center wall
+		motor[BackLeft] = -127;
+		motor[BackRight] = -127;
+		motor[FrontLeft] = -127;
+		motor[FrontRight] = -127;
+	}
+	motor[BackLeft] = 0;
+	motor[BackRight] = 0;
+	motor[FrontLeft] = 0;
+	motor[FrontRight] = 0;
+	while(SensorValue[LiftLimit] == 0){ //Lift Arm to dump
+		motor[Arm1] = 127;
+		motor[Arm2] = 127;
+	}
+	motor[Arm1] = 0;
+	motor[Arm2] = 0;
+	wait1Msec(250);
+	while(SensorValue[Poten2] <= 2300){ //Lower Arm
+		motor[Arm1] = -127;
+		motor[Arm2] = -127;
+	}
+	motor[Arm1] = 0;//Stop arm
+	motor[Arm2] = 0;
+	autonMoveL = SensorValue[I2C_1];
+	autonMoveR = SensorValue[I2C_2];
+	while((SensorValue[I2C_1] - autonMoveL <= 1400) && (SensorValue[I2C_2] - autonMoveR >= -1400)){ //Repeat
+		motor[BackLeft] = 127;
+		motor[BackRight] = 127;
+		motor[FrontLeft] = 127;
+		motor[FrontRight] = 127;
+	}
+	motor[BackLeft] = 0;
+	motor[BackRight] = 0;
+	motor[FrontLeft] = 0;
+	motor[FrontRight] = 0;
+	wait1Msec(10000);
+	while(SensorValue[Poten2] >= 2200){ //Lift Arm
+		motor[Arm1] = 127;
+		motor[Arm2] = 127;
+	}
+	motor[Arm1] = 0;//Stop arm
+	motor[Arm2] = 0;
+	autonMoveL = SensorValue[I2C_1];
+	autonMoveR = SensorValue[I2C_2];
+	while((SensorValue[I2C_1] - autonMoveL >= -1400) && (SensorValue[I2C_2] - autonMoveR <= 1400)){ //Back up into center wall
+		motor[BackLeft] = -127;
+		motor[BackRight] = -127;
+		motor[FrontLeft] = -127;
+		motor[FrontRight] = -127;
+	}
+	motor[BackLeft] = 0;
+	motor[BackRight] = 0;
+	motor[FrontLeft] = 0;
+	motor[FrontRight] = 0;
+	while(SensorValue[LiftLimit] == 0){ //Lift Arm to dump
+		motor[Arm1] = 127;
+		motor[Arm2] = 127;
+	}
+	motor[Arm1] = 0;
+	motor[Arm2] = 0;
+	wait1Msec(250);
+	while(SensorValue[Poten2] <= 2300){ //Lower Arm
+		motor[Arm1] = -127;
+		motor[Arm2] = -127;
+	}
+	motor[Arm1] = 0;//Stop arm
+	motor[Arm2] = 0;
+	while((SensorValue[I2C_1] - autonMoveL <= 600) && (SensorValue[I2C_2] - autonMoveR >= -600)){ //Repeat
+		motor[BackLeft] = 127;
+		motor[BackRight] = 127;
+		motor[FrontLeft] = 127;
+		motor[FrontRight] = 127;
+	}
+	motor[BackLeft] = 0;
+	motor[BackRight] = 0;
+	motor[FrontLeft] = 0;
+	motor[FrontRight] = 0;
+	wait1Msec(10000);
+	while(SensorValue[Poten2] >= 2200){ //Lift Arm
+		motor[Arm1] = 127;
+		motor[Arm2] = 127;
+	}
+	motor[Arm1] = 0;//Stop arm
+	motor[Arm2] = 0;
+	autonMoveL = SensorValue[I2C_1];
+	autonMoveR = SensorValue[I2C_2];
+	while((SensorValue[I2C_1] - autonMoveL >= -1400) && (SensorValue[I2C_2] - autonMoveR <= 1400)){ //Back up into center wall
+		motor[BackLeft] = -127;
+		motor[BackRight] = -127;
+		motor[FrontLeft] = -127;
+		motor[FrontRight] = -127;
+	}
+	motor[BackLeft] = 0;
+	motor[BackRight] = 0;
+	motor[FrontLeft] = 0;
+	motor[FrontRight] = 0;
+	while(SensorValue[LiftLimit] == 0){ //Lift Arm to dump
+		motor[Arm1] = 127;
+		motor[Arm2] = 127;
+	}
+	motor[Arm1] = 0;
+	motor[Arm2] = 0;
+	wait1Msec(250);
+	while(SensorValue[Poten2] <= 2300){ //Lower Arm
+		motor[Arm1] = -127;
+		motor[Arm2] = -127;
+	}
+	motor[Arm1] = 0;//Stop arm
+	motor[Arm2] = 0;
+	autonMoveL = SensorValue[I2C_1];
+	autonMoveR = SensorValue[I2C_2];
+	while((SensorValue[I2C_1] - autonMoveL <= 80) && (SensorValue[I2C_2] - autonMoveR >= -80)){//Forward
+		motor[BackLeft] = 127;
+		motor[BackRight] = 127;
+		motor[FrontLeft] = 127;
+		motor[FrontRight] = 127;
+	}
+	autonMoveL = SensorValue[I2C_1];
+	autonMoveR = SensorValue[I2C_2];
+	while((SensorValue[I2C_1] - autonMoveL >= -400) && (SensorValue[I2C_2] - autonMoveR <= 400)){//Back
+		motor[BackLeft] = -127;
+		motor[BackRight] = -127;
+		motor[FrontLeft] = -127;
+		motor[FrontRight] = -127;
+	}//Knocks dump down
+	motor[BackLeft] = 0;
+	motor[BackRight] = 0;
+	motor[FrontLeft] = 0;
+	motor[FrontRight] = 0;
+	wait1Msec(10000);
+	while(SensorValue[Poten2] >= 2200){ //Lift Arm
+		motor[Arm1] = 127;
+		motor[Arm2] = 127;
+	}
+	motor[Arm1] = 0;//Stop arm
+	motor[Arm2] = 0;
+	autonMoveL = SensorValue[I2C_1];
+	autonMoveR = SensorValue[I2C_2];
+	while((SensorValue[I2C_1] - autonMoveL >= -1400) && (SensorValue[I2C_2] - autonMoveR <= 1400)){ //Back up into center wall
+		motor[BackLeft] = -127;
+		motor[BackRight] = -127;
+		motor[FrontLeft] = -127;
+		motor[FrontRight] = -127;
+	}
+	motor[BackLeft] = 0;
+	motor[BackRight] = 0;
+	motor[FrontLeft] = 0;
+	motor[FrontRight] = 0;
+	while(SensorValue[LiftLimit] == 0){ //Lift Arm to dump
+		motor[Arm1] = 127;
+		motor[Arm2] = 127;
+	}
+	motor[Arm1] = 0;
+	motor[Arm2] = 0;
+	wait1Msec(250);
+	while(SensorValue[Poten2] <= 2300){ //Lower Arm
+		motor[Arm1] = -127;
+		motor[Arm2] = -127;
+	}
+	motor[Arm1] = 0;//Stop arm
+	motor[Arm2] = 0;
+	autonMoveL = SensorValue[I2C_1];
+	autonMoveR = SensorValue[I2C_2];
+}
 task autonomous(){
-	if(SensorValue[LeftvsRight] == 1){
-		//	autonR();
+	if(SensorValue[ProgrammingSkills] == 0){
+		if(SensorValue[LeftvsRight] == 1){ //Jumper
+			//	autonR();
+		}
+		else{
+			autonL();
+		}
 	}
 	else{
-		autonL();
+		programskills();
 	}
 }
 
