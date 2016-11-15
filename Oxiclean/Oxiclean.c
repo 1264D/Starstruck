@@ -7,12 +7,12 @@
 #pragma config(Sensor, dgtl4,  ,               sensorTouch)
 #pragma config(Sensor, dgtl5,  ,               sensorTouch)
 #pragma config(Sensor, dgtl6,  ,               sensorTouch)
-#pragma config(Sensor, dgtl7,  ,               sensorTouch)
+#pragma config(Sensor, dgtl7,  LiftLimit,      sensorTouch)
 #pragma config(Sensor, dgtl8,  ,               sensorTouch)
 #pragma config(Sensor, dgtl9,  ,               sensorTouch)
 #pragma config(Sensor, dgtl10, ,               sensorTouch)
 #pragma config(Sensor, dgtl11, NearvsFar,      sensorTouch)
-#pragma config(Sensor, dgtl12, BluevsRed,      sensorTouch)
+#pragma config(Sensor, dgtl12, LeftvsRight,    sensorTouch)
 #pragma config(Sensor, I2C_1,  BackLeft,       sensorQuadEncoderOnI2CPort,    , AutoAssign )
 #pragma config(Sensor, I2C_2,  BackRight,      sensorQuadEncoderOnI2CPort,    , AutoAssign )
 #pragma config(Motor,  port1,            ,             tmotorVex393_HBridge, openLoop)
@@ -39,6 +39,8 @@
 int ArmAngle; //Preset angles
 bool AngleToggle; //Disables lift while moving to presets
 bool AngleToggle2; //Disables lift while correcting
+int autonMoveL;
+int autonMoveR;
 int RealAngle; //Converts 2nd Potentiometer value to 1st
 int RightJoyMV; //Main Right Y
 int RightJoySV; //Partner Right Y
@@ -175,97 +177,204 @@ void Control(){
 void pre_auton(){
 	bStopTasksBetweenModes = true;
 }
-void autonomouse(){
-	while((SensorValue[I2C_1] <= 80) && (SensorValue[I2C_2] >= -80)){//Forward
+void autonL(){
+	autonMoveL = SensorValue[I2C_1];
+	autonMoveR = SensorValue[I2C_2];
+	while((SensorValue[I2C_1] - autonMoveL <= 80) && (SensorValue[I2C_2] - autonMoveR >= -80)){//Forward
 		motor[BackLeft] = 127;
 		motor[BackRight] = 127;
 		motor[FrontLeft] = 127;
 		motor[FrontRight] = 127;
 	}
-	while((SensorValue[I2C_1] >= -240) && (SensorValue[I2C_2] <= 240)){//Back
+	autonMoveL = SensorValue[I2C_1];
+	autonMoveR = SensorValue[I2C_2];
+	while((SensorValue[I2C_1] - autonMoveL >= -300) && (SensorValue[I2C_2] - autonMoveR <= 300)){//Back
 		motor[BackLeft] = -127;
 		motor[BackRight] = -127;
 		motor[FrontLeft] = -127;
 		motor[FrontRight] = -127;
 	}//Knocks dump down
-	while((SensorValue[I2C_1] <= 450) && (SensorValue[I2C_2] >= -450)){ //Forward to pick up star
+	autonMoveL = SensorValue[I2C_1];
+	autonMoveR = SensorValue[I2C_2];
+	while((SensorValue[I2C_1] - autonMoveL <= 200) && (SensorValue[I2C_2] - autonMoveR >= -200)){ //Forward to pick up star
 		motor[BackLeft] = 127;
 		motor[BackRight] = 127;
 		motor[FrontLeft] = 127;
 		motor[FrontRight] = 127;
-	}
-	while((SensorValue[I2C_1] >= 440) && (SensorValue[I2C_2] <= -440)){//Back to get away from wall to be able to raise lift
-		motor[BackLeft] = -127;
-		motor[BackRight] = -127;
-		motor[FrontLeft] = -127;
-		motor[FrontRight] = -127;
 	}
 	motor[BackLeft] = 0;//Stop moving
 	motor[BackRight] = 0;
 	motor[FrontLeft] = 0;
 	motor[FrontRight] = 0;
-	while(SensorValue[Poten1] <= 440){ //Lift Arm
+	while(SensorValue[Poten2] >= 1500){ //Lift Arm
 		motor[Arm1] = 127;
 		motor[Arm2] = 127;
 	}
 	motor[Arm1] = 0;//Stop arm
 	motor[Arm2] = 0;
-	/*	while((SensorValue[I2C_1] <= 450) && (SensorValue[I2C_2] >= -450)){ //Turn to face back field
-	motor[BackLeft] = -127;
-	motor[BackRight] = 127;
-	motor[FrontLeft] = -127;
-	motor[FrontRight] = 127;
-	}*/
-	/*	while((SensorValue[I2C_1] <= 450) && (SensorValue[I2C_2] >= -450)){ //Back up into center wall
-	motor[BackLeft] = -127;
-	motor[BackRight] = -127;
-	motor[FrontLeft] = -127;
-	motor[FrontRight] = -127;
-	}*/
-	/*	while(SensorValue[Poten1] <= 440){ //Lift Arm to dump
-	motor[Arm1] = 127;
-	motor[Arm2] = 127;
-	}*/
-	/*while(SensorValue[Poten1] <= 440){ //Lower Arm
-	motor[Arm1] = -127;
-	motor[Arm2] = -127;
-	}*/
-	/*	while((SensorValue[I2C_1] <= 450) && (SensorValue[I2C_2] >= -450)){ //Turn left
-	motor[BackLeft] = -127;
-	motor[BackRight] = 127;
-	motor[FrontLeft] = -127;
-	motor[FrontRight] = 127;
-	}*/
-	/*	while(SensorValue[Poten1] <= 440){ //Lift Arm to knock
-	motor[Arm1] = 127;
-	motor[Arm2] = 127;
-	}*/
-	/*while(SensorValue[Poten1] <= 440){ //Lower Arm
-	motor[Arm1] = -127;
-	motor[Arm2] = -127;
-	}*/
-	/*while((SensorValue[I2C_1] <= 450) && (SensorValue[I2C_2] >= -450)){ //Forward
-		motor[BackLeft] = 127;
+	autonMoveL = SensorValue[I2C_1];
+	autonMoveR = SensorValue[I2C_2];
+	while((SensorValue[I2C_1] - autonMoveL >= -935) && (SensorValue[I2C_2] - autonMoveR >= -935)){ //Turn to face back field
+		motor[BackLeft] = -127;
 		motor[BackRight] = 127;
-		motor[FrontLeft] = 127;
+		motor[FrontLeft] = -127;
 		motor[FrontRight] = 127;
-	}*
-	/*	while(SensorValue[Poten1] <= 440){ //Lift Arm to knock
-	motor[Arm1] = 127;
-	motor[Arm2] = 127;
-	}*/
-	/*while(SensorValue[Poten1] <= 440){ //Lower Arm
-	motor[Arm1] = -127;
-	motor[Arm2] = -127;
-	}*/
+	}
+	autonMoveL = SensorValue[I2C_1];
+	autonMoveR = SensorValue[I2C_2];
+	while((SensorValue[I2C_1] - autonMoveL >= -2200) && (SensorValue[I2C_2] - autonMoveR <= 2200)){ //Back up into center wall
+		motor[BackLeft] = -127;
+		motor[BackRight] = -127;
+		motor[FrontLeft] = -127;
+		motor[FrontRight] = -127;
+	}
+	motor[BackLeft] = 0;
+	motor[BackRight] = 0;
+	motor[FrontLeft] = 0;
+	motor[FrontRight] = 0;
+	while(SensorValue[LiftLimit] == 0){ //Lift Arm to dump
+		motor[Arm1] = 127;
+		motor[Arm2] = 127;
+	}
+	motor[Arm1] = 0;
+	motor[Arm2] = 0;
+	wait1Msec(750);
+	while(SensorValue[Poten2] <= 2800){ //Lower Arm
+		motor[Arm1] = -127;
+		motor[Arm2] = -127;
+	}
+	motor[Arm1] = 0;
+	motor[Arm2] = 0;
+	autonMoveL = SensorValue[I2C_1];
+	autonMoveR = SensorValue[I2C_2];
+	while((SensorValue[I2C_1] - autonMoveL >= -875) && (SensorValue[I2C_2] - autonMoveR <= 875)){ //Turn left
+		motor[BackLeft] = -127;
+		motor[BackRight] = 127;
+		motor[FrontLeft] = -127;
+		motor[FrontRight] = 127;
+	}
+	motor[BackLeft] = 0;
+	motor[BackRight] = 0;
+	motor[FrontLeft] = 0;
+	motor[FrontRight] = 0;
+	while(SensorValue[LiftLimit] == 0){ //Lift Arm to dump
+		motor[Arm1] = 127;
+		motor[Arm2] = 127;
+	}
+	while(SensorValue[Poten2] <= 2800){ //Lower Arm
+		motor[Arm1] = -127;
+		motor[Arm2] = -127;
+	}
+
+	motor[Arm1] = 0;
+	motor[Arm2] = 0;
 	motor[BackLeft] = 0;
 	motor[BackRight] = 0;
 	motor[FrontLeft] = 0;
 	motor[FrontRight] = 0;
 }
 
+void autonR(){
+	autonMoveL = SensorValue[I2C_1];
+	autonMoveR = SensorValue[I2C_2];
+	while((SensorValue[I2C_1] - autonMoveL <= 80) && (SensorValue[I2C_2] - autonMoveR >= -80)){//Forward
+		motor[BackLeft] = 127;
+		motor[BackRight] = 127;
+		motor[FrontLeft] = 127;
+		motor[FrontRight] = 127;
+	}
+	autonMoveL = SensorValue[I2C_1];
+	autonMoveR = SensorValue[I2C_2];
+	while((SensorValue[I2C_1] - autonMoveL >= -200) && (SensorValue[I2C_2] - autonMoveR <= 200)){//Back
+		motor[BackLeft] = -127;
+		motor[BackRight] = -127;
+		motor[FrontLeft] = -127;
+		motor[FrontRight] = -127;
+	}//Knocks dump down
+	autonMoveL = SensorValue[I2C_1];
+	autonMoveR = SensorValue[I2C_2];
+	while((SensorValue[I2C_1] - autonMoveL <= 200) && (SensorValue[I2C_2] - autonMoveR >= -200)){ //Forward to pick up star
+		motor[BackLeft] = 127;
+		motor[BackRight] = 127;
+		motor[FrontLeft] = 127;
+		motor[FrontRight] = 127;
+	}
+	motor[BackLeft] = 0;//Stop moving
+	motor[BackRight] = 0;
+	motor[FrontLeft] = 0;
+	motor[FrontRight] = 0;
+	while(SensorValue[Poten1] >= 1500){ //Lift Arm
+		motor[Arm1] = 127;
+		motor[Arm2] = 127;
+	}
+	motor[Arm1] = 0;//Stop arm
+	motor[Arm2] = 0;
+	autonMoveL = SensorValue[I2C_1];
+	autonMoveR = SensorValue[I2C_2];
+	while((SensorValue[I2C_1] - autonMoveL <= 935) && (SensorValue[I2C_2] - autonMoveR <= 935)){ //Turn to face back field
+		motor[BackLeft] = -127;
+		motor[BackRight] = 127;
+		motor[FrontLeft] = -127;
+		motor[FrontRight] = 127;
+	}
+	autonMoveL = SensorValue[I2C_1];
+	autonMoveR = SensorValue[I2C_2];
+	while((SensorValue[I2C_1] - autonMoveL >= -2200) && (SensorValue[I2C_2] - autonMoveR <= 2200)){ //Back up into center wall
+		motor[BackLeft] = -127;
+		motor[BackRight] = -127;
+		motor[FrontLeft] = -127;
+		motor[FrontRight] = -127;
+	}
+	motor[BackLeft] = 0;
+	motor[BackRight] = 0;
+	motor[FrontLeft] = 0;
+	motor[FrontRight] = 0;
+	while(SensorValue[Poten2] >= 1600){ //Lift Arm to dump
+		motor[Arm1] = 127;
+		motor[Arm2] = 127;
+	}
+	motor[Arm1] = 0;
+	motor[Arm2] = 0;
+	wait1Msec(250);
+	while(SensorValue[Poten2] <= 2800){ //Lower Arm
+		motor[Arm1] = -127;
+		motor[Arm2] = -127;
+	}
+	motor[Arm1] = 0;
+	motor[Arm2] = 0;
+	/*	while((SensorValue[BackLeft] >= -3950) && (SensorValue[BackRight] >= 250)){ //Turn left
+	motor[BackLeft] = -127;
+	motor[BackRight] = 127;
+	motor[FrontLeft] = -127;
+	motor[FrontRight] = 127;
+	}
+	motor[BackLeft] = 0;
+	motor[BackRight] = 0;
+	motor[FrontLeft] = 0;
+	motor[FrontRight] = 0;
+	while(SensorValue[Poten1] >= 3400){ //Lift Arm to knock
+	motor[Arm1] = 90;
+	motor[Arm2] = 90;
+	}
+	while(SensorValue[Poten2] <= 2800){ //Lower Arm
+	motor[Arm1] = -127;
+	motor[Arm2] = -127;
+	}
+	*/
+	motor[Arm1] = 0;
+	motor[Arm2] = 0;
+	motor[BackLeft] = 0;
+	motor[BackRight] = 0;
+	motor[FrontLeft] = 0;
+	motor[FrontRight] = 0;
+}
 task autonomous(){
-	autonomouse();
+	if(SensorValue[LeftvsRight] == 1){
+		//	autonR();
+	}
+	else{
+		autonL();
+	}
 }
 
 task usercontrol(){
