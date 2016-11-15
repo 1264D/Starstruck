@@ -206,7 +206,7 @@ void autonL(){
 	motor[BackRight] = 0;
 	motor[FrontLeft] = 0;
 	motor[FrontRight] = 0;
-	while(SensorValue[Poten2] >= 1600){ //Lift Arm
+	while(SensorValue[Poten2] >= 1500){ //Lift Arm
 		motor[Arm1] = 127;
 		motor[Arm2] = 127;
 	}
@@ -238,32 +238,34 @@ void autonL(){
 	}
 	motor[Arm1] = 0;
 	motor[Arm2] = 0;
-	wait1Msec(250);
+	wait1Msec(750);
 	while(SensorValue[Poten2] <= 2800){ //Lower Arm
 		motor[Arm1] = -127;
 		motor[Arm2] = -127;
 	}
 	motor[Arm1] = 0;
 	motor[Arm2] = 0;
-	/*	while((SensorValue[BackLeft] >= -3950) && (SensorValue[BackRight] >= 250)){ //Turn left
-	motor[BackLeft] = -127;
-	motor[BackRight] = 127;
-	motor[FrontLeft] = -127;
-	motor[FrontRight] = 127;
+	autonMoveL = SensorValue[I2C_1];
+	autonMoveR = SensorValue[I2C_2];
+	while((SensorValue[I2C_1] - autonMoveL >= -875) && (SensorValue[I2C_2] - autonMoveR <= 875)){ //Turn left
+		motor[BackLeft] = -127;
+		motor[BackRight] = 127;
+		motor[FrontLeft] = -127;
+		motor[FrontRight] = 127;
 	}
 	motor[BackLeft] = 0;
 	motor[BackRight] = 0;
 	motor[FrontLeft] = 0;
 	motor[FrontRight] = 0;
-	while(SensorValue[Poten1] >= 3400){ //Lift Arm to knock
-	motor[Arm1] = 90;
-	motor[Arm2] = 90;
+	while(SensorValue[LiftLimit] == 0){ //Lift Arm to dump
+		motor[Arm1] = 127;
+		motor[Arm2] = 127;
 	}
 	while(SensorValue[Poten2] <= 2800){ //Lower Arm
-	motor[Arm1] = -127;
-	motor[Arm2] = -127;
+		motor[Arm1] = -127;
+		motor[Arm2] = -127;
 	}
-	*/
+
 	motor[Arm1] = 0;
 	motor[Arm2] = 0;
 	motor[BackLeft] = 0;
@@ -273,7 +275,7 @@ void autonL(){
 }
 
 void autonR(){
- 	autonMoveL = SensorValue[I2C_1];
+	autonMoveL = SensorValue[I2C_1];
 	autonMoveR = SensorValue[I2C_2];
 	while((SensorValue[I2C_1] - autonMoveL <= 80) && (SensorValue[I2C_2] - autonMoveR >= -80)){//Forward
 		motor[BackLeft] = 127;
@@ -301,7 +303,7 @@ void autonR(){
 	motor[BackRight] = 0;
 	motor[FrontLeft] = 0;
 	motor[FrontRight] = 0;
-	while(SensorValue[Poten1] >= 1600){ //Lift Arm
+	while(SensorValue[Poten1] >= 1500){ //Lift Arm
 		motor[Arm1] = 127;
 		motor[Arm2] = 127;
 	}
@@ -368,7 +370,7 @@ void autonR(){
 }
 task autonomous(){
 	if(SensorValue[LeftvsRight] == 1){
-		autonR();
+		//	autonR();
 	}
 	else{
 		autonL();
