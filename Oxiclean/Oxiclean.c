@@ -39,8 +39,8 @@
 int ArmAngle; //Preset angles
 bool AngleToggle; //Disables lift while moving to presets
 bool AngleToggle2; //Disables lift while correcting
-int autonMoveL;
-int autonMoveR;
+int autonMoveL; //Reset variable for autonomous left wheel
+int autonMoveR; // reset wheel for autonomous right wheel
 int RealAngle; //Converts 2nd Potentiometer value to 1st
 int RightJoyMV; //Main Right Y
 int RightJoySV; //Partner Right Y
