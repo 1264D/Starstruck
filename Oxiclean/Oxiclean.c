@@ -84,16 +84,16 @@ void Variables(){
 }
 
 void Base(){
-	motor[FrontLeft] = PowerCap(LeftJoyMV);
+	motor[FrontLeft] = PowerCap(LeftJoyMV + vexRT[Btn5U]*-127 + vexRT[Btn6U]*127);
 	//Control front left wheel using left main joystick and strafe left and strafe right using upper bumpers
-	motor[FrontRight] = PowerCap(RightJoyMV);
+	motor[FrontRight] = PowerCap(RightJoyMV+ vexRT[Btn5U]*127 + vexRT[Btn6U]*-127);
 	//Control front right wheel using right main joystick and strafe left and right using upper bumpers
-	motor[BackLeft] = PowerCap(LeftJoyMV);
+	motor[BackLeft] = PowerCap(LeftJoyMV + vexRT[Btn5U]*127 + vexRT[Btn6U]*-127);
 	//Control back left wheel using left main joystick and strafe left and right using upper bumpers
-	motor[BackRight] = PowerCap(RightJoyMV);
+	motor[BackRight] = PowerCap(RightJoyMV + vexRT[Btn5U]*-127 + vexRT[Btn6U]*127);
 	//Control back right wheel using right main joystick and strafe left and right using upper bumpers
 	motor[MidLeft] = PowerCap(LeftJoyMV);
-
+	//Control Mid motors using joysticks
 	motor[MidRight] = PowerCap(RightJoyMV);
 }
 
