@@ -437,7 +437,7 @@ void autonR(){//Right autonomous
 		autonMoveL = SensorValue[I2C_1];//reset
 		autonMoveR = SensorValue[I2C_2];
 
-		while((SensorValue[I2C_1] - autonMoveL <= 280)){ //Turn to face back field
+		while((SensorValue[I2C_1] - autonMoveL <= 225)){ //Turn to face back field
 			motor[BackLeft] = 50;
 			motor[BackRight] = -50;
 			motor[FrontLeft] = 50;
@@ -478,7 +478,7 @@ void autonR(){//Right autonomous
 			}
 			motor[Arm1] = 0;
 			motor[Arm2] = 0;
-			while((SensorValue[I2C_1] - autonMoveL <= 275)){ //Turn right
+			while((SensorValue[I2C_1] - autonMoveL <= 300)){ //Turn right
 				motor[BackLeft] = 50;
 				motor[BackRight] = -50;
 				motor[FrontLeft] = 50;
