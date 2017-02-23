@@ -1,26 +1,21 @@
-#pragma config(I2C_Usage, I2C1, i2cSensors)
-#pragma config(Sensor, in1,    Poten1,         sensorPotentiometer)
-#pragma config(Sensor, dgtl1,  TwoRemote,      sensorTouch)
-#pragma config(Sensor, dgtl2,  ,               sensorTouch)
-#pragma config(Sensor, dgtl3,  ,               sensorTouch)
-#pragma config(Sensor, dgtl4,  ProgrammingSkills, sensorTouch)
+#pragma config(Sensor, in1,		 Poten1,         sensorPotentiometer)
+#pragma config(Sensor, dgtl1,  ,               sensorTouch)
+#pragma config(Sensor, dgtl2,  AutonL,         sensorQuadEncoder)
+#pragma config(Sensor, dgtl4,  ProgrammingSkills, sensorNone)
 #pragma config(Sensor, dgtl5,  Turn,           sensorTouch)
 #pragma config(Sensor, dgtl6,  Cube,           sensorTouch)
 #pragma config(Sensor, dgtl7,  LiftLimit,      sensorTouch)
-#pragma config(Sensor, dgtl8,  ,               sensorTouch)
-#pragma config(Sensor, dgtl9,  ,               sensorTouch)
+#pragma config(Sensor, dgtl8,  AutonR,         sensorQuadEncoder)
 #pragma config(Sensor, dgtl10, Simple,         sensorTouch)
 #pragma config(Sensor, dgtl11, NearvsFar,      sensorTouch)
 #pragma config(Sensor, dgtl12, LeftvsRight,    sensorTouch)
-#pragma config(Sensor, I2C_1,  BackLeft,       sensorQuadEncoderOnI2CPort,    , AutoAssign )
-#pragma config(Sensor, I2C_2,  BackRight,      sensorQuadEncoderOnI2CPort,    , AutoAssign )
 #pragma config(Motor,  port1,           Arm12,         tmotorVex393_HBridge, openLoop, reversed)
 #pragma config(Motor,  port2,           FrontRight,    tmotorVex393HighSpeed_MC29, openLoop, reversed)
 #pragma config(Motor,  port3,           BackRight,     tmotorVex393HighSpeed_MC29, openLoop, reversed)
-#pragma config(Motor,  port4,           MidRight,      tmotorVex393HighSpeed_MC29, openLoop, reversed, encoderPort, I2C_2)
+#pragma config(Motor,  port4,           MidRight,      tmotorVex393HighSpeed_MC29, openLoop, reversed)
 #pragma config(Motor,  port5,           Arm1,          tmotorVex393_MC29, openLoop)
 #pragma config(Motor,  port6,           Arm2,          tmotorVex393_MC29, openLoop, reversed)
-#pragma config(Motor,  port7,           MidLeft,       tmotorVex393HighSpeed_MC29, openLoop, encoderPort, I2C_1)
+#pragma config(Motor,  port7,           MidLeft,       tmotorVex393HighSpeed_MC29, openLoop)
 #pragma config(Motor,  port8,           FrontLeft,     tmotorVex393HighSpeed_MC29, openLoop)
 #pragma config(Motor,  port9,           BackLeft,      tmotorVex393HighSpeed_MC29, openLoop)
 #pragma config(Motor,  port10,          Arm22,         tmotorVex393_HBridge, openLoop)
@@ -48,6 +43,8 @@ int RightJoyMH; //Main Right X
 int RightJoySH; //Partner Right X
 string batteryMain; //String for lcd
 string batteryPowerExpander; //String for lcd
+
+int hold = 0; //Hold
 
 int JoyClear(int origVal) { //intake current joystick position
 	if(abs(origVal) < 10){ // if joystick is close to still just return 0
@@ -99,15 +96,36 @@ void Base(){
 
 void Lift(){
 	//	AngleCorrect();
-	if(SensorValue[TwoRemote]){ //If it is not correcting or moving to presets and two person mode is enabled
-		motor[Arm1] = RightJoySV; //Control lift with 2nd remote right joystick
-		motor[Arm2] = RightJoySV;
-	}
-	else{
-		motor[Arm1] = PowerCap(vexRT[Btn6D]*-100 + vexRT[Btn5D]*100); //Control lift with Bottom bumpers
-		motor[Arm2] = PowerCap(vexRT[Btn6D]*-100 + vexRT[Btn5D]*100);
-		motor[Arm12] = PowerCap(vexRT[Btn6D]*-100 + vexRT[Btn5D]*100);
-		motor[Arm22] = PowerCap(vexRT[Btn6D]*-100 + vexRT[Btn5D]*100);
+		if (vexRT[Btn5D] != 0 || vexRT[Btn6D] != 0){ //normal operation; raise/lower if bumpers pressed
+			motor[Arm1] = PowerCap(vexRT[Btn6D]*-100 + vexRT[Btn5D]*100); //Control lift with Bottom bumpers
+			motor[Arm2] = PowerCap(vexRT[Btn6D]*-100 + vexRT[Btn5D]*100);
+			motor[Arm12] = PowerCap(vexRT[Btn6D]*-100 + vexRT[Btn5D]*100);
+			motor[Arm22] = PowerCap(vexRT[Btn6D]*-100 + vexRT[Btn5D]*100);
+			hold = 0; //disable holding during manual control
+		}
+		else {
+			if (hold == 0){ //no power to lift if hold disabled and no buttons pressed
+				motor[Arm1] = 0;
+		   	motor[Arm2] = 0;
+				motor[Arm12] = 0;
+				motor[Arm22] = 0;
+			}
+			else { //Code for when hold is activated
+				if(SensorValue[Poten1] <= 2600){ //if lift is below
+					motor[Arm1] = PowerCap((2900 - SensorValue[Poten1])/-10);
+					motor[Arm2] = PowerCap((2900 - SensorValue[Poten1])/-10);
+					motor[Arm12] = PowerCap((2900 - SensorValue[Poten1])/-10);
+					motor[Arm22] = PowerCap((2900 - SensorValue[Poten1])/-10);
+				} else {
+					motor[Arm1] = 0;
+					motor[Arm2] = 0;
+					motor[Arm12] = 0;
+					motor[Arm22] = 0;
+				}
+			}
+		}
+	if (hold == 0 && vexRT[Btn8D]){
+		hold = 1;
 	}
 }
 
@@ -133,9 +151,9 @@ void pre_auton(){ //Do not touch
 void autonL(){ //auton starting on left tile
 
 	if(SensorValue[Simple] == 1){
-		autonMoveL = SensorValue[I2C_1]; //reset encoder values
-		autonMoveR = SensorValue[I2C_2];
-		while((SensorValue[I2C_1] - autonMoveL <= 40)){//Drop lift
+		autonMoveL = SensorValue[AutonL]; //reset encoder values
+		autonMoveR = SensorValue[AutonR];
+		while((SensorValue[AutonL] - autonMoveL <= 40)){//Drop lift
 			motor[BackLeft] = 100;
 			motor[BackRight] = 100;
 			motor[FrontLeft] = 100;
@@ -143,9 +161,9 @@ void autonL(){ //auton starting on left tile
 			motor[MidRight] = 100;
 			motor[FrontRight] = 100;
 		}
-		autonMoveL = SensorValue[I2C_1]; //reset encoder values
-		autonMoveR = SensorValue[I2C_2];
-		while((SensorValue[I2C_1] - autonMoveL >= -160)){//Drop lift
+		autonMoveL = SensorValue[AutonL]; //reset encoder values
+		autonMoveR = SensorValue[AutonR];
+		while((SensorValue[AutonL] - autonMoveL >= -160)){//Drop lift
 			motor[BackLeft] = -100;
 			motor[BackRight] = -100;
 			motor[FrontLeft] = -100;
@@ -160,8 +178,8 @@ void autonL(){ //auton starting on left tile
 		motor[MidRight] = 0;
 		motor[FrontRight] = 0;
 		wait1Msec(250);
-		autonMoveL = SensorValue[I2C_1]; //reset encoder values
-		autonMoveR = SensorValue[I2C_2];
+		autonMoveL = SensorValue[AutonL]; //reset encoder values
+		autonMoveR = SensorValue[AutonR];
 		while(SensorValue[Poten1] <= 2500){ //Lift Arm
 			motor[Arm1] = -127;
 			motor[Arm2] = -127;
@@ -172,7 +190,7 @@ void autonL(){ //auton starting on left tile
 		motor[Arm2] = 0;
 		motor[Arm12] = 0;
 		motor[Arm22] = 0;
-		while((SensorValue[I2C_1] - autonMoveL >= -825)){//Back to fence
+		while((SensorValue[AutonL] - autonMoveL >= -825)){//Back to fence
 			motor[BackLeft] = -100;
 			motor[BackRight] = -100;
 			motor[FrontLeft] = -100;
@@ -195,9 +213,9 @@ void autonL(){ //auton starting on left tile
 	}
 
 	else{
-		autonMoveL = SensorValue[I2C_1]; //reset encoder values
-		autonMoveR = SensorValue[I2C_2];
-		while((SensorValue[I2C_1] - autonMoveL <= 80)){//Forward
+		autonMoveL = SensorValue[AutonL]; //reset encoder values
+		autonMoveR = SensorValue[AutonR];
+		while((SensorValue[AutonL] - autonMoveL <= 80)){//Forward
 			motor[BackLeft] = 100;
 			motor[BackRight] = 100;
 			motor[FrontLeft] = 100;
@@ -205,9 +223,9 @@ void autonL(){ //auton starting on left tile
 			motor[MidRight] = 100;
 			motor[FrontRight] = 100;
 		} // The main way this motion works is measuring the difference in the original encoder value and the current value
-		autonMoveL = SensorValue[I2C_1];
-		autonMoveR = SensorValue[I2C_2];//reset
-		while((SensorValue[I2C_1] - autonMoveL >= -1)){//Back
+		autonMoveL = SensorValue[AutonL];
+		autonMoveR = SensorValue[AutonR];//reset
+		while((SensorValue[AutonL] - autonMoveL >= -1)){//Back
 			motor[BackLeft] = -80;
 			motor[BackRight] = -80;
 			motor[FrontLeft] = -80;
@@ -216,10 +234,10 @@ void autonL(){ //auton starting on left tile
 			motor[MidRight] = -80;
 		}//Knocks dump down
 		wait1Msec(500);
-		autonMoveL = SensorValue[I2C_1];//reset
-		autonMoveR = SensorValue[I2C_2];
+		autonMoveL = SensorValue[AutonL];//reset
+		autonMoveR = SensorValue[AutonR];
 
-		while((SensorValue[I2C_1] - autonMoveL <= 350)){ //Forward to pick up star
+		while((SensorValue[AutonL] - autonMoveL <= 350)){ //Forward to pick up star
 			motor[BackLeft] = 80;
 			motor[BackRight] = 80;
 			motor[FrontLeft] = 80;
@@ -239,10 +257,10 @@ void autonL(){ //auton starting on left tile
 		}
 		motor[Arm1] = 0;//Stop arm
 		motor[Arm2] = 0;
-		autonMoveL = SensorValue[I2C_1];//reset
-		autonMoveR = SensorValue[I2C_2];
+		autonMoveL = SensorValue[AutonL];//reset
+		autonMoveR = SensorValue[AutonR];
 
-		while((SensorValue[I2C_1] - autonMoveL >= -280)){ //Turn to face back field
+		while((SensorValue[AutonL] - autonMoveL >= -280)){ //Turn to face back field
 			motor[BackLeft] = -50;
 			motor[BackRight] = 50;
 			motor[FrontLeft] = -50;
@@ -250,9 +268,9 @@ void autonL(){ //auton starting on left tile
 			motor[MidLeft] = -50;
 			motor[MidRight] = 50;
 		}
-		autonMoveL = SensorValue[I2C_1];
-		autonMoveR = SensorValue[I2C_2];//reset
-		while((SensorValue[I2C_1] - autonMoveL >= -1400)){ //Back up into center wall
+		autonMoveL = SensorValue[AutonL];
+		autonMoveR = SensorValue[AutonR];//reset
+		while((SensorValue[AutonL] - autonMoveL >= -1400)){ //Back up into center wall
 			motor[BackLeft] = -80;
 			motor[BackRight] = -80;
 			motor[FrontLeft] = -80;
@@ -273,8 +291,8 @@ void autonL(){ //auton starting on left tile
 		motor[Arm1] = 0;
 		motor[Arm2] = 0;
 
-		autonMoveL = SensorValue[I2C_1]; //reset
-		autonMoveR = SensorValue[I2C_2];
+		autonMoveL = SensorValue[AutonL]; //reset
+		autonMoveR = SensorValue[AutonR];
 
 		if(SensorValue[Turn] == 1){
 			while(SensorValue[Poten1] >= 2000){ //Lower Arm
@@ -283,7 +301,7 @@ void autonL(){ //auton starting on left tile
 			}
 			motor[Arm1] = 0;
 			motor[Arm2] = 0;
-			while((SensorValue[I2C_1] - autonMoveL >= -275)){ //Turn left
+			while((SensorValue[AutonL] - autonMoveL >= -275)){ //Turn left
 				motor[BackLeft] = -50;
 				motor[BackRight] = 50;
 				motor[FrontLeft] = -50;
@@ -291,9 +309,9 @@ void autonL(){ //auton starting on left tile
 				motor[MidLeft] = -50;
 				motor[MidRight] = 50;
 			}
-			autonMoveL = SensorValue[I2C_1]; //reset
-			autonMoveR = SensorValue[I2C_2];
-			while((SensorValue[I2C_1] - autonMoveL <= 125)){//Forward
+			autonMoveL = SensorValue[AutonL]; //reset
+			autonMoveR = SensorValue[AutonR];
+			while((SensorValue[AutonL] - autonMoveL <= 125)){//Forward
 				motor[BackLeft] = 127;
 				motor[BackRight] = 127;
 				motor[FrontLeft] = 127;
@@ -328,9 +346,9 @@ void autonL(){ //auton starting on left tile
 
 void autonR(){//Right autonomous
 	if(SensorValue[Simple] == 1){
-		autonMoveL = SensorValue[I2C_1]; //reset encoder values
-		autonMoveR = SensorValue[I2C_2];
-		while((SensorValue[I2C_1] - autonMoveL <= 40)){//Drop lift
+		autonMoveL = SensorValue[AutonL]; //reset encoder values
+		autonMoveR = SensorValue[AutonR];
+		while((SensorValue[AutonL] - autonMoveL <= 40)){//Drop lift
 			motor[BackLeft] = 100;
 			motor[BackRight] = 100;
 			motor[FrontLeft] = 100;
@@ -338,9 +356,9 @@ void autonR(){//Right autonomous
 			motor[MidRight] = 100;
 			motor[FrontRight] = 100;
 		}
-		autonMoveL = SensorValue[I2C_1]; //reset encoder values
-		autonMoveR = SensorValue[I2C_2];
-		while((SensorValue[I2C_1] - autonMoveL >= -160)){//Drop lift
+		autonMoveL = SensorValue[AutonL]; //reset encoder values
+		autonMoveR = SensorValue[AutonR];
+		while((SensorValue[AutonL] - autonMoveL >= -160)){//Drop lift
 			motor[BackLeft] = -100;
 			motor[BackRight] = -100;
 			motor[FrontLeft] = -100;
@@ -355,8 +373,8 @@ void autonR(){//Right autonomous
 		motor[MidRight] = 0;
 		motor[FrontRight] = 0;
 		wait1Msec(250);
-		autonMoveL = SensorValue[I2C_1]; //reset encoder values
-		autonMoveR = SensorValue[I2C_2];
+		autonMoveL = SensorValue[AutonL]; //reset encoder values
+		autonMoveR = SensorValue[AutonR];
 		while(SensorValue[Poten1] <= 2500){ //Lift Arm
 			motor[Arm1] = -127;
 			motor[Arm2] = -127;
@@ -367,7 +385,7 @@ void autonR(){//Right autonomous
 		motor[Arm2] = 0;
 		motor[Arm12] = 0;
 		motor[Arm22] = 0;
-		while((SensorValue[I2C_1] - autonMoveL >= -825)){//Back to fence
+		while((SensorValue[AutonL] - autonMoveL >= -825)){//Back to fence
 			motor[BackLeft] = -100;
 			motor[BackRight] = -100;
 			motor[FrontLeft] = -100;
@@ -390,9 +408,9 @@ void autonR(){//Right autonomous
 	}
 
 	else{
-		autonMoveL = SensorValue[I2C_1]; //reset encoder values
-		autonMoveR = SensorValue[I2C_2];
-		while((SensorValue[I2C_1] - autonMoveL <= 80)){//Forward
+		autonMoveL = SensorValue[AutonL]; //reset encoder values
+		autonMoveR = SensorValue[AutonR];
+		while((SensorValue[AutonL] - autonMoveL <= 80)){//Forward
 			motor[BackLeft] = 100;
 			motor[BackRight] = 100;
 			motor[FrontLeft] = 100;
@@ -400,9 +418,9 @@ void autonR(){//Right autonomous
 			motor[MidRight] = 100;
 			motor[FrontRight] = 100;
 		} // The main way this motion works is measuring the difference in the original encoder value and the current value
-		autonMoveL = SensorValue[I2C_1];
-		autonMoveR = SensorValue[I2C_2];//reset
-		while((SensorValue[I2C_1] - autonMoveL >= -1)){//Back
+		autonMoveL = SensorValue[AutonL];
+		autonMoveR = SensorValue[AutonR];//reset
+		while((SensorValue[AutonL] - autonMoveL >= -1)){//Back
 			motor[BackLeft] = -80;
 			motor[BackRight] = -80;
 			motor[FrontLeft] = -80;
@@ -411,10 +429,10 @@ void autonR(){//Right autonomous
 			motor[MidRight] = -80;
 		}//Knocks dump down
 		wait1Msec(500);
-		autonMoveL = SensorValue[I2C_1];//reset
-		autonMoveR = SensorValue[I2C_2];
+		autonMoveL = SensorValue[AutonL];//reset
+		autonMoveR = SensorValue[AutonR];
 
-		while((SensorValue[I2C_1] - autonMoveL <= 350)){ //Forward to pick up star
+		while((SensorValue[AutonL] - autonMoveL <= 350)){ //Forward to pick up star
 			motor[BackLeft] = 80;
 			motor[BackRight] = 80;
 			motor[FrontLeft] = 80;
@@ -434,10 +452,10 @@ void autonR(){//Right autonomous
 		}
 		motor[Arm1] = 0;//Stop arm
 		motor[Arm2] = 0;
-		autonMoveL = SensorValue[I2C_1];//reset
-		autonMoveR = SensorValue[I2C_2];
+		autonMoveL = SensorValue[AutonL];//reset
+		autonMoveR = SensorValue[AutonR];
 
-		while((SensorValue[I2C_1] - autonMoveL <= 225)){ //Turn to face back field
+		while((SensorValue[AutonL] - autonMoveL <= 225)){ //Turn to face back field
 			motor[BackLeft] = 50;
 			motor[BackRight] = -50;
 			motor[FrontLeft] = 50;
@@ -445,9 +463,9 @@ void autonR(){//Right autonomous
 			motor[MidLeft] = 50;
 			motor[MidRight] = -50;
 		}
-		autonMoveL = SensorValue[I2C_1];
-		autonMoveR = SensorValue[I2C_2];//reset
-		while((SensorValue[I2C_1] - autonMoveL >= -1400)){ //Back up into center wall
+		autonMoveL = SensorValue[AutonL];
+		autonMoveR = SensorValue[AutonR];//reset
+		while((SensorValue[AutonL] - autonMoveL >= -1400)){ //Back up into center wall
 			motor[BackLeft] = -80;
 			motor[BackRight] = -80;
 			motor[FrontLeft] = -80;
@@ -468,8 +486,8 @@ void autonR(){//Right autonomous
 		motor[Arm1] = 0;
 		motor[Arm2] = 0;
 
-		autonMoveL = SensorValue[I2C_1]; //reset
-		autonMoveR = SensorValue[I2C_2];
+		autonMoveL = SensorValue[AutonL]; //reset
+		autonMoveR = SensorValue[AutonR];
 
 		if(SensorValue[Turn] == 1){
 			while(SensorValue[Poten1] >= 2000){ //Lower Arm
@@ -478,7 +496,7 @@ void autonR(){//Right autonomous
 			}
 			motor[Arm1] = 0;
 			motor[Arm2] = 0;
-			while((SensorValue[I2C_1] - autonMoveL <= 300)){ //Turn right
+			while((SensorValue[AutonL] - autonMoveL <= 300)){ //Turn right
 				motor[BackLeft] = 50;
 				motor[BackRight] = -50;
 				motor[FrontLeft] = 50;
@@ -486,9 +504,9 @@ void autonR(){//Right autonomous
 				motor[MidLeft] = 50;
 				motor[MidRight] = -50;
 			}
-			autonMoveL = SensorValue[I2C_1]; //reset
-			autonMoveR = SensorValue[I2C_2];
-			while((SensorValue[I2C_1] - autonMoveL <= 125)){//Forward
+			autonMoveL = SensorValue[AutonL]; //reset
+			autonMoveR = SensorValue[AutonR];
+			while((SensorValue[AutonL] - autonMoveL <= 125)){//Forward
 				motor[BackLeft] = 127;
 				motor[BackRight] = 127;
 				motor[FrontLeft] = 127;
