@@ -1,7 +1,8 @@
-#pragma config(Sensor, in1,		 Poten1,         sensorPotentiometer)
+#pragma config(Sensor, in1,    Poten1,         sensorPotentiometer)
+#pragma config(Sensor, in2,    Euro,           sensorGyro)
 #pragma config(Sensor, dgtl1,  ,               sensorTouch)
 #pragma config(Sensor, dgtl2,  AutonL,         sensorQuadEncoder)
-#pragma config(Sensor, dgtl4,  ProgrammingSkills, sensorNone)
+#pragma config(Sensor, dgtl4,  ProgrammingSkills, sensorTouch)
 #pragma config(Sensor, dgtl5,  Turn,           sensorTouch)
 #pragma config(Sensor, dgtl6,  Cube,           sensorTouch)
 #pragma config(Sensor, dgtl7,  LiftLimit,      sensorTouch)
@@ -160,6 +161,37 @@ void rDrive(int pwr){
 	motor[MidRight] = pwr;
 }
 
+void turn(int theta){
+	int initial = SensorValue[Euro];
+	int desire = initial + theta;
+	if(theta < 0){
+		while(SensorValue[Euro] > desire + 550){
+			rDrive(-55);
+			lDrive(55);
+		}
+		while(SensorValue[Euro] > desire + 160){
+			rDrive(-40);
+			lDrive(40);
+		}
+		lDrive(0);
+		rDrive(0);
+		return;
+	}
+	if(theta > 0){
+		while(SensorValue[Euro] < desire - 550){
+			rDrive(55);
+			lDrive(-55);
+		}
+		while(SensorValue[Euro] < desire - 160){
+			rDrive(40);
+			lDrive(-40);
+		}
+		lDrive(0);
+		rDrive(0);
+		return;
+	}
+}
+
 void autonL(){ //auton starting on left tile
 	if(SensorValue[Simple] == 1){
 		autonMoveL = SensorValue[AutonL]; //reset encoder values
@@ -223,6 +255,91 @@ void autonL(){ //auton starting on left tile
 		}
 	}
 
+	else if(SensorValue[NearvsFar] == 1){
+		autonMoveL = SensorValue[AutonL]; //reset encoder values
+		autonMoveR = SensorValue[AutonR];
+		while((SensorValue[AutonL] - autonMoveL <= 70 && SensorValue[AutonR] - autonMoveR <= 70)){//Drop lift
+			motor[BackLeft] = 100;
+			motor[BackRight] = 100;
+			motor[FrontLeft] = 100;
+			motor[MidLeft] = 100;
+			motor[MidRight] = 100;
+			motor[FrontRight] = 100;
+		}
+		autonMoveL = SensorValue[AutonL]; //reset encoder values
+		autonMoveR = SensorValue[AutonR];
+		while((SensorValue[AutonL] - autonMoveL >= -70 && SensorValue[AutonR] - autonMoveR >= -70)){//Drop lift
+			motor[BackLeft] = -100;
+			motor[BackRight] = -100;
+			motor[FrontLeft] = -100;
+			motor[MidLeft] = -100;
+			motor[MidRight] = -100;
+			motor[FrontRight] = -100;
+		}
+		motor[BackLeft] = 0;
+		motor[BackRight] = 0;
+		motor[FrontLeft] = 0;
+		motor[MidLeft] = 0;
+		motor[MidRight] = 0;
+		motor[FrontRight] = 0;
+		wait1Msec(300);
+		motor[Arm1] = 70;
+		motor[Arm2] = 70;
+		motor[Arm12] = 70;
+		motor[Arm22] = 70;
+		wait1Msec(200);
+		autonMoveL = SensorValue[AutonL]; //reset encoder values
+		autonMoveR = SensorValue[AutonR];
+		while((SensorValue[AutonL] - autonMoveL <= 710 && SensorValue[AutonR] - autonMoveR <= 710)){//grab cube
+			lDrive(90);
+			rDrive(90);
+		}
+		lDrive(0);
+		rDrive(0);
+		wait1Msec(500);
+		while(SensorValue[Poten1] <= 2650){ //Lift Arm
+			motor[Arm1] = -100;
+			motor[Arm2] = -100;
+			motor[Arm12] = -100;
+			motor[Arm22] = -100;
+		}
+		motor[Arm1] = -30;
+		motor[Arm2] = -30;
+		motor[Arm12] = -30;
+		motor[Arm22] = -30;
+		turn(-1100);
+		while((SensorValue[AutonL] - autonMoveL >= -160 && SensorValue[AutonR] - autonMoveR >= -160)){//Backup to fence
+			motor[BackLeft] = -100;
+			motor[BackRight] = -100;
+			motor[FrontLeft] = -100;
+			motor[MidLeft] = -100;
+			motor[MidRight] = -100;
+			motor[FrontRight] = -100;
+		}
+		while(SensorValue[LiftLimit] == 0){ //Lift Arm to dump
+			motor[Arm1] = -127;
+			motor[Arm2] = -127;
+			motor[Arm12] = -127;
+			motor[Arm22] = -127;
+		}
+		while(SensorValue[Poten1] >= 3300){ //Lift Arm
+			motor[Arm1] = 100;
+			motor[Arm2] = 100;
+			motor[Arm12] = 100;
+			motor[Arm22] = 100;
+		}
+		while(SensorValue[LiftLimit] == 0){ //Lift Arm to dump
+			motor[Arm1] = -127;
+			motor[Arm2] = -127;
+			motor[Arm12] = -127;
+			motor[Arm22] = -127;
+		}
+		motor[Arm1] = 0;
+		motor[Arm2] = 0;
+		motor[Arm12] = 0;
+		motor[Arm22] = 0;
+	}
+
 	else{
 		autonMoveL = SensorValue[AutonL]; //reset encoder values
 		autonMoveR = SensorValue[AutonR];
@@ -254,17 +371,13 @@ void autonL(){ //auton starting on left tile
 		autonMoveL = SensorValue[AutonL];//reset
 		autonMoveR = SensorValue[AutonR];
 
-		while((SensorValue[AutonL] - autonMoveL <= 160) || (SensorValue[AutonR] - autonMoveR <= 160)){ //Forward to pick up star
-			if (SensorValue[AutonL] - autonMoveL <= 160){
-				lDrive(80);
-				} else {
-				lDrive(0);
-			}
-			if (SensorValue[AutonR] - autonMoveR <= 160){
-				rDrive(80);
-				} else {
-				rDrive(0);
-			}
+		while((SensorValue[AutonL] - autonMoveL <= 140) || (SensorValue[AutonR] - autonMoveR <= 140)){ //Forward to pick up star
+			motor[BackLeft] = 100;
+			motor[BackRight] = 100;
+			motor[FrontLeft] = 100;
+			motor[MidLeft] = 100;
+			motor[MidRight] = 100;
+			motor[FrontRight] = 100;
 		}
 		motor[BackLeft] = 0;//Stop moving
 		motor[BackRight] = 0;
@@ -272,7 +385,6 @@ void autonL(){ //auton starting on left tile
 		motor[FrontRight] = 0;
 		motor[MidLeft] = 0;
 		motor[MidRight] = 0;
-		wait1Msec(200);
 		while(SensorValue[Poten1] <= 2700){ //Lift Arm
 			motor[Arm1] = -127;
 			motor[Arm2] = -127;
@@ -286,22 +398,25 @@ void autonL(){ //auton starting on left tile
 		autonMoveL = SensorValue[AutonL];//reset
 		autonMoveR = SensorValue[AutonR];
 
-		while((SensorValue[AutonL] - autonMoveL >= -200) && (SensorValue[AutonR] - autonMoveR <= 280)){ //Turn to face back field
-			if (SensorValue[AutonL] - autonMoveL >= -200){
-				lDrive(-80);
-				} else {
-				lDrive(0);
-			}
-			if (SensorValue[AutonR] - autonMoveR <= 280){
-				rDrive(80);
-				} else {
-				rDrive(0);
-			}
+
+		turn(850);
+
+		/*	while((SensorValue[AutonL] - autonMoveL >= -200) && (SensorValue[AutonR] - autonMoveR <= 280)){ //Turn to face back field
+		if (SensorValue[AutonL] - autonMoveL >= -200){
+		lDrive(-80);
+		} else {
+		lDrive(0);
 		}
+		if (SensorValue[AutonR] - autonMoveR <= 280){
+		rDrive(80);
+		} else {
+		rDrive(0);
+		}
+		}*/
 
 		autonMoveL = SensorValue[AutonL];
 		autonMoveR = SensorValue[AutonR];//reset
-		while((SensorValue[AutonL] - autonMoveL >= -1400) || (SensorValue[AutonR] - autonMoveR >= -1400)){ //Back up into center wall
+		while((SensorValue[AutonL] - autonMoveL >= -1500) || (SensorValue[AutonR] - autonMoveR >= -1500)){ //Back up into center wall
 			motor[BackLeft] = -80;
 			motor[BackRight] = -80;
 			motor[FrontLeft] = -80;
@@ -347,18 +462,21 @@ void autonL(){ //auton starting on left tile
 			motor[Arm2] = 0;
 			motor[Arm12] = 0;
 			motor[Arm22] = 0;
-			while((SensorValue[AutonL] - autonMoveL >= -360) && (SensorValue[AutonR] - autonMoveR <= 360)){ //Turn left
-				if (SensorValue[AutonL] - autonMoveL >= -360){
-					lDrive(-75);
-					} else {
-					lDrive(0);
-				}
-				if (SensorValue[AutonR] - autonMoveR <= 360){
-					rDrive(75);
-					} else {
-					rDrive(0);
-				}
+			/*while((SensorValue[AutonL] - autonMoveL >= -360) && (SensorValue[AutonR] - autonMoveR <= 360)){ //Turn left
+			if (SensorValue[AutonL] - autonMoveL >= -360){
+			lDrive(-75);
+			} else {
+			lDrive(0);
 			}
+			if (SensorValue[AutonR] - autonMoveR <= 360){
+			rDrive(75);
+			} else {
+			rDrive(0);
+			}
+			}*/
+
+			turn(980);
+
 			autonMoveL = SensorValue[AutonL]; //reset
 			autonMoveR = SensorValue[AutonR];
 			motor[BackLeft] = 0;
@@ -367,9 +485,6 @@ void autonL(){ //auton starting on left tile
 			motor[FrontRight] = 0;
 			motor[MidLeft] = 0;
 			motor[MidRight] = 0;
-			lDrive(30);
-			rDrive(-30);
-			wait1Msec(45);
 			autonMoveL = SensorValue[AutonL]; //reset
 			autonMoveR = SensorValue[AutonR];
 			while((SensorValue[AutonL] - autonMoveL <= 120) || (SensorValue[AutonR] - autonMoveR <= 120)){//Forward
@@ -470,10 +585,10 @@ void autonR(){//Right autonomous
 		}
 	}
 
-	else{
+	else{ //non-simple auton
 		autonMoveL = SensorValue[AutonL]; //reset encoder values
 		autonMoveR = SensorValue[AutonR];
-		while((SensorValue[AutonL] - autonMoveL <= 80)){//Forward
+		while((SensorValue[AutonL] - autonMoveL <= 75)){//Forward
 			motor[BackLeft] = 100;
 			motor[BackRight] = 100;
 			motor[FrontLeft] = 100;
@@ -501,17 +616,13 @@ void autonR(){//Right autonomous
 		autonMoveL = SensorValue[AutonL];//reset
 		autonMoveR = SensorValue[AutonR];
 
-		while((SensorValue[AutonL] - autonMoveL <= 160) || (SensorValue[AutonR] - autonMoveR <= 160)){ //Forward to pick up star
-			if (SensorValue[AutonL] - autonMoveL <= 160){
-				lDrive(80);
-				} else {
-				lDrive(0);
-			}
-			if (SensorValue[AutonR] - autonMoveR <= 160){
-				rDrive(80);
-				} else {
-				rDrive(0);
-			}
+		while((SensorValue[AutonL] - autonMoveL <= 140) || (SensorValue[AutonR] - autonMoveR <= 140)){ //Forward to pick up star
+			motor[BackLeft] = 100;
+			motor[BackRight] = 100;
+			motor[FrontLeft] = 100;
+			motor[MidLeft] = 100;
+			motor[MidRight] = 100;
+			motor[FrontRight] = 100;
 		}
 		motor[BackLeft] = 0;//Stop moving
 		motor[BackRight] = 0;
@@ -533,22 +644,26 @@ void autonR(){//Right autonomous
 		autonMoveL = SensorValue[AutonL];//reset
 		autonMoveR = SensorValue[AutonR];
 
-		while((SensorValue[AutonR] - autonMoveR >= -200) && (SensorValue[AutonL] - autonMoveL <= 270)){ //Turn to face back field
-			if (SensorValue[AutonL] - autonMoveL <= 270){
-				lDrive(80);
-				} else {
-				lDrive(0);
-			}
-			if (SensorValue[AutonR] - autonMoveR >= -200){
-				rDrive(-80);
-				} else {
-				rDrive(0);
-			}
+
+		turn(-920);
+		wait1Msec(200);
+
+		/*	while((SensorValue[AutonL] - autonMoveL >= -200) && (SensorValue[AutonR] - autonMoveR <= 280)){ //Turn to face back field
+		if (SensorValue[AutonL] - autonMoveL >= -200){
+		lDrive(-80);
+		} else {
+		lDrive(0);
 		}
+		if (SensorValue[AutonR] - autonMoveR <= 280){
+		rDrive(80);
+		} else {
+		rDrive(0);
+		}
+		}*/
 
 		autonMoveL = SensorValue[AutonL];
 		autonMoveR = SensorValue[AutonR];//reset
-		while((SensorValue[AutonL] - autonMoveL >= -1400) || (SensorValue[AutonR] - autonMoveR >= -1400)){ //Back up into center wall
+		while((SensorValue[AutonL] - autonMoveL >= -1370) || (SensorValue[AutonR] - autonMoveR >= -1370)){ //Back up into center wall
 			motor[BackLeft] = -80;
 			motor[BackRight] = -80;
 			motor[FrontLeft] = -80;
@@ -594,29 +709,22 @@ void autonR(){//Right autonomous
 			motor[Arm2] = 0;
 			motor[Arm12] = 0;
 			motor[Arm22] = 0;
-			while((SensorValue[AutonL] - autonMoveL <= 360) && (SensorValue[AutonR] - autonMoveR >= -360)){ //Turn left
-				if (SensorValue[AutonL] - autonMoveL <= 360){
-					lDrive(75);
-					} else {
-					lDrive(0);
-				}
-				if (SensorValue[AutonR] - autonMoveR >= -360){
-					rDrive(-75);
-					} else {
-					rDrive(0);
-				}
+			/*while((SensorValue[AutonL] - autonMoveL >= -360) && (SensorValue[AutonR] - autonMoveR <= 360)){ //Turn left
+			if (SensorValue[AutonL] - autonMoveL >= -360){
+			lDrive(-75);
+			} else {
+			lDrive(0);
 			}
-			autonMoveL = SensorValue[AutonL]; //reset
-			autonMoveR = SensorValue[AutonR];
-			motor[BackLeft] = 0;
-			motor[BackRight] = 0;
-			motor[FrontLeft] = 0;
-			motor[FrontRight] = 0;
-			motor[MidLeft] = 0;
-			motor[MidRight] = 0;
-			lDrive(30);
-			rDrive(-30);
-			wait1Msec(45);
+			if (SensorValue[AutonR] - autonMoveR <= 360){
+			rDrive(75);
+			} else {
+			rDrive(0);
+			}
+			}*/
+
+			turn(-945);
+
+
 			autonMoveL = SensorValue[AutonL]; //reset
 			autonMoveR = SensorValue[AutonR];
 			while((SensorValue[AutonL] - autonMoveL <= 120) || (SensorValue[AutonR] - autonMoveR <= 120)){//Forward
@@ -655,7 +763,541 @@ void autonR(){//Right autonomous
 }
 
 void programskills(){
+	autonMoveL = SensorValue[AutonL]; //reset encoder values
+	autonMoveR = SensorValue[AutonR];
+	while((SensorValue[AutonL] - autonMoveL >= -220 && SensorValue[AutonR] - autonMoveR >= -220)){//Drop lift
+		motor[BackLeft] = -127;
+		motor[BackRight] = -127;
+		motor[FrontLeft] = -127;
+		motor[MidLeft] = -127;
+		motor[MidRight] = -127;
+		motor[FrontRight] = -127;
+	}
+	motor[BackLeft] = 0;
+	motor[BackRight] = 0;
+	motor[FrontLeft] = 0;
+	motor[MidLeft] = 0;
+	motor[MidRight] = 0;
+	motor[FrontRight] = 0;
+	wait1Msec(1250);
+	while(SensorValue[Poten1] <= 2700){ //Lift Arm
+		motor[Arm1] = -127;
+		motor[Arm2] = -127;
+		motor[Arm12] = -127;
+		motor[Arm22] = -127;
+	}
+	motor[Arm1] = -20;//Stop arm
+	motor[Arm2] = -20;
+	motor[Arm12] = -20;
+	motor[Arm22] = -20;
+	autonMoveL = SensorValue[AutonL];//reset
+	autonMoveR = SensorValue[AutonR];
+	while((SensorValue[AutonL] - autonMoveL >= -720) || (SensorValue[AutonR] - autonMoveR >= -720)){ //Back up into center wall
+		motor[BackLeft] = -80;
+		motor[BackRight] = -80;
+		motor[FrontLeft] = -80;
+		motor[FrontRight] = -80;
+		motor[MidLeft] = -80;
+		motor[MidRight] = -80;
+	}
+	motor[BackLeft] = 0;
+	motor[BackRight] = 0;
+	motor[FrontLeft] = 0;
+	motor[MidLeft] = 0;
+	motor[MidRight] = 0;
+	motor[FrontRight] = 0;
+	while(SensorValue[LiftLimit ] == 0){ //Lift Arm to knock
+		motor[Arm1] = -127;
+		motor[Arm2] = -127;
+		motor[Arm12] = -127;
+		motor[Arm22] = -127;
+	}
+	wait1Msec(250);
+	while(SensorValue[Poten1] >= 3350){
+		motor[Arm1] = 80;
+		motor[Arm2] = 80;
+		motor[Arm12] = 80;
+		motor[Arm22] = 80;
+	}
+	motor[Arm1] = 0;
+	motor[Arm2] = 0;
+	motor[Arm12] = 0;
+	motor[Arm22] = 0;
+	autonMoveL = SensorValue[AutonL];//reset
+	autonMoveR = SensorValue[AutonR];
+	while((SensorValue[AutonL] - autonMoveL <= 700) || (SensorValue[AutonR] - autonMoveR <= 700)){ //preload round 2
+		motor[BackLeft] = 80;
+		motor[BackRight] = 80;
+		motor[FrontLeft] = 80;
+		motor[FrontRight] = 80;
+		motor[MidLeft] = 80;
+		motor[MidRight] = 80;
+	}
+	motor[BackLeft] = 0;
+	motor[BackRight] = 0;
+	motor[FrontLeft] = 0;
+	motor[MidLeft] = 0;
+	motor[MidRight] = 0;
+	motor[FrontRight] = 0;
+	motor[Arm1] = -20;//Stop arm
+	motor[Arm2] = -20;
+	motor[Arm12] = -20;
+	motor[Arm22] = -20;
+	wait1Msec(2000);
+	autonMoveL = SensorValue[AutonL];//reset
+	autonMoveR = SensorValue[AutonR];
+	while((SensorValue[AutonL] - autonMoveL >= -800) || (SensorValue[AutonR] - autonMoveR >= -800)){ //Back up into center wall
+		motor[BackLeft] = -80;
+		motor[BackRight] = -80;
+		motor[FrontLeft] = -80;
+		motor[FrontRight] = -80;
+		motor[MidLeft] = -80;
+		motor[MidRight] = -80;
+	}
+	while(SensorValue[LiftLimit ] == 0){ //Lift Arm to knock
+		motor[Arm1] = -127;
+		motor[Arm2] = -127;
+		motor[Arm12] = -127;
+		motor[Arm22] = -127;
+	}
+	motor[Arm1] = 0;
+	motor[Arm2] = 0;
+	motor[Arm12] = 0;
+	motor[Arm22] = 0;
+	wait1Msec(250);
+	while(SensorValue[Poten1] >= 3350){
+		motor[Arm1] = 80;
+		motor[Arm2] = 80;
+		motor[Arm12] = 80;
+		motor[Arm22] = 80;
+	}
+	motor[Arm1] = 0;
+	motor[Arm2] = 0;
+	motor[Arm12] = 0;
+	motor[Arm22] = 0;
+	autonMoveL = SensorValue[AutonL];//reset
+	autonMoveR = SensorValue[AutonR];
+	while((SensorValue[AutonL] - autonMoveL <= 700) || (SensorValue[AutonR] - autonMoveR <= 700)){ //preload round 3
+		motor[BackLeft] = 80;
+		motor[BackRight] = 80;
+		motor[FrontLeft] = 80;
+		motor[FrontRight] = 80;
+		motor[MidLeft] = 80;
+		motor[MidRight] = 80;
+	}
+	motor[BackLeft] = 0;
+	motor[BackRight] = 0;
+	motor[FrontLeft] = 0;
+	motor[MidLeft] = 0;
+	motor[MidRight] = 0;
+	motor[FrontRight] = 0;
+	motor[Arm1] = -20;//Stop arm
+	motor[Arm2] = -20;
+	motor[Arm12] = -20;
+	motor[Arm22] = -20;
+	wait1Msec(1250);
+	autonMoveL = SensorValue[AutonL];//reset
+	autonMoveR = SensorValue[AutonR];
+	while((SensorValue[AutonL] - autonMoveL >= -800) || (SensorValue[AutonR] - autonMoveR >= -800)){ //Back up into center wall
+		motor[BackLeft] = -80;
+		motor[BackRight] = -80;
+		motor[FrontLeft] = -80;
+		motor[FrontRight] = -80;
+		motor[MidLeft] = -80;
+		motor[MidRight] = -80;
+	}
+	while(SensorValue[LiftLimit ] == 0){ //Lift Arm to knock
+		motor[Arm1] = -127;
+		motor[Arm2] = -127;
+		motor[Arm12] = -127;
+		motor[Arm22] = -127;
+	}
+	motor[Arm1] = 0;
+	motor[Arm2] = 0;
+	motor[Arm12] = 0;
+	motor[Arm22] = 0;
+	while(SensorValue[Poten1] >= 3350){
+		motor[Arm1] = 80;
+		motor[Arm2] = 80;
+		motor[Arm12] = 80;
+		motor[Arm22] = 80;
+	}
+	motor[Arm1] = 0;
+	motor[Arm2] = 0;
+	motor[Arm12] = 0;
+	motor[Arm22] = 0;
+	autonMoveL = SensorValue[AutonL];//reset
+	autonMoveR = SensorValue[AutonR];
+	while((SensorValue[AutonL] - autonMoveL <= 700) || (SensorValue[AutonR] - autonMoveR <= 700)){ //preload round 4
+		motor[BackLeft] = 80;
+		motor[BackRight] = 80;
+		motor[FrontLeft] = 80;
+		motor[FrontRight] = 80;
+		motor[MidLeft] = 80;
+		motor[MidRight] = 80;
+	}
+	motor[BackLeft] = 0;
+	motor[BackRight] = 0;
+	motor[FrontLeft] = 0;
+	motor[MidLeft] = 0;
+	motor[MidRight] = 0;
+	motor[FrontRight] = 0;
+	motor[Arm1] = -20;//Stop arm
+	motor[Arm2] = -20;
+	motor[Arm12] = -20;
+	motor[Arm22] = -20;
+	wait1Msec(1250);
+	autonMoveL = SensorValue[AutonL];//reset
+	autonMoveR = SensorValue[AutonR];
+	while((SensorValue[AutonL] - autonMoveL >= -800) || (SensorValue[AutonR] - autonMoveR >= -800)){ //Back up into center wall
+		motor[BackLeft] = -80;
+		motor[BackRight] = -80;
+		motor[FrontLeft] = -80;
+		motor[FrontRight] = -80;
+		motor[MidLeft] = -80;
+		motor[MidRight] = -80;
+	}
+	while(SensorValue[LiftLimit ] == 0){ //Lift Arm to knock
+		motor[Arm1] = -127;
+		motor[Arm2] = -127;
+		motor[Arm12] = -127;
+		motor[Arm22] = -127;
+	}
+	motor[Arm1] = 0;
+	motor[Arm2] = 0;
+	motor[Arm12] = 0;
+	motor[Arm22] = 0;
+	wait1Msec(250);
+	while(SensorValue[Poten1] >= 3100){
+		motor[Arm1] = 80;
+		motor[Arm2] = 80;
+		motor[Arm12] = 80;
+		motor[Arm22] = 80;
+	}
+	motor[Arm1] = 0;
+	motor[Arm2] = 0;
+	motor[Arm12] = 0;
+	motor[Arm22] = 0;
+	autonMoveL = SensorValue[AutonL]; //reset encoder values
+	autonMoveR = SensorValue[AutonR];
 
+	while((SensorValue[AutonL] - autonMoveL <= 100 && SensorValue[AutonR] - autonMoveR <= 100)){//Get off fence
+		motor[BackLeft] = 100;
+		motor[BackRight] = 100;
+		motor[FrontLeft] = 100;
+		motor[MidLeft] = 100;
+		motor[MidRight] = 100;
+		motor[FrontRight] = 100;
+	}
+	motor[BackLeft] = 0;
+	motor[BackRight] = 0;
+	motor[FrontLeft] = 0;
+	motor[FrontRight] = 0;
+	motor[MidLeft] = 0;
+	motor[MidRight] = 0;
+	turn(840);
+	autonMoveL = SensorValue[AutonL]; //reset encoder values
+	autonMoveR = SensorValue[AutonR];
+	while((SensorValue[AutonL] - autonMoveL >= -120 && SensorValue[AutonR] - autonMoveR >= -120)){//Get off fence
+		motor[BackLeft] = -100;
+		motor[BackRight] = -100;
+		motor[FrontLeft] = -100;
+		motor[MidLeft] = -100;
+		motor[MidRight] = -100;
+		motor[FrontRight] = -100;
+	}
+	motor[BackLeft] = 0;
+	motor[BackRight] = 0;
+	motor[FrontLeft] = 0;
+	motor[FrontRight] = 0;
+	motor[MidLeft] = 0;
+	motor[MidRight] = 0;
+	while(SensorValue[Poten1] >= 2000){ //Lower Arm
+		motor[Arm1] = 127;
+		motor[Arm2] = 127;
+		motor[Arm12] = 127;
+		motor[Arm22] = 127;
+	}
+	motor[Arm1] = 0;
+	motor[Arm2] = 0;
+	motor[Arm12] = 0;
+	motor[Arm22] = 0;
+	autonMoveL = SensorValue[AutonL];//reset
+	autonMoveR = SensorValue[AutonR];
+	while((SensorValue[AutonL] - autonMoveL <= 2800) || (SensorValue[AutonR] - autonMoveR <= 2800)){
+		if (SensorValue[AutonL] - autonMoveL <= 2400){
+			lDrive(116);
+		}
+		else {
+			lDrive(70);
+		}
+		if (SensorValue[AutonR] - autonMoveR <= 2800){
+			rDrive(127);
+		}
+		else {
+			rDrive(0);
+		}
+	}
+	autonMoveL = SensorValue[AutonL];//reset
+	autonMoveR = SensorValue[AutonR];
+	while((SensorValue[AutonL] - autonMoveL >= -50) || (SensorValue[AutonR] - autonMoveR >= -50)){
+		motor[BackLeft] = -100;
+		motor[BackRight] = -100;
+		motor[FrontLeft] = -100;
+		motor[FrontRight] = -100;
+		motor[MidLeft] = -100;
+		motor[MidRight] = -100;
+	}
+	motor[BackLeft] = 0;
+	motor[BackRight] = 0;
+	motor[FrontLeft] = 0;
+	motor[FrontRight] = 0;
+	motor[MidLeft] = 0;
+	motor[MidRight] = 0;
+	while(SensorValue[Poten1] <= 2700){ //Lift Arm
+		motor[Arm1] = -127;
+		motor[Arm2] = -127;
+		motor[Arm12] = -127;
+		motor[Arm22] = -127;
+	}
+	motor[Arm1] = -40;//Stop arm
+	motor[Arm2] = -40;
+	motor[Arm12] = -40;
+	motor[Arm22] = -40;
+	autonMoveL = SensorValue[AutonL];//reset
+	autonMoveR = SensorValue[AutonR];
+	turn(-940);
+	while((SensorValue[AutonL] - autonMoveL >= -65) || (SensorValue[AutonR] - autonMoveR >= -65)){
+		motor[BackLeft] = -100;
+		motor[BackRight] = -100;
+		motor[FrontLeft] = -100;
+		motor[FrontRight] = -100;
+		motor[MidLeft] = -100;
+		motor[MidRight] = -100;
+	}
+	while(SensorValue[LiftLimit ] == 0){ //Lift Arm to knock
+		motor[Arm1] = -127;
+		motor[Arm2] = -127;
+		motor[Arm12] = -127;
+		motor[Arm22] = -127;
+	}
+	motor[Arm1] = 0;
+	motor[Arm2] = 0;
+	motor[Arm12] = 0;
+	motor[Arm22] = 0;
+	wait1Msec(150);
+	while(SensorValue[Poten1] >= 2000){ //Lower Arm
+		motor[Arm1] = 127;
+		motor[Arm2] = 127;
+		motor[Arm12] = 127;
+		motor[Arm22] = 127;
+	}
+	motor[Arm1] = 0;
+	motor[Arm2] = 0;
+	motor[Arm12] = 0;
+	motor[Arm22] = 0;
+	autonMoveL = SensorValue[AutonL];//reset
+	autonMoveR = SensorValue[AutonR];
+	while((SensorValue[AutonL] - autonMoveL <= 1200 || SensorValue[AutonR] - autonMoveR <= 1200)){//Grab 1st field cube
+		motor[BackLeft] = 100;
+		motor[BackRight] = 100;
+		motor[FrontLeft] = 100;
+		motor[MidLeft] = 100;
+		motor[MidRight] = 100;
+		motor[FrontRight] = 100;
+	}
+	autonMoveL = SensorValue[AutonL];//reset
+	autonMoveR = SensorValue[AutonR];
+	while((SensorValue[AutonL] - autonMoveL >= -90 || SensorValue[AutonR] - autonMoveR >= -90)){//Grab 1st field cube
+		motor[BackLeft] = -80;
+		motor[BackRight] = -80;
+		motor[FrontLeft] = -80;
+		motor[MidLeft] = -80;
+		motor[MidRight] = -80;
+		motor[FrontRight] = -80;
+	}
+	motor[BackLeft] = 0;
+	motor[BackRight] = 0;
+	motor[FrontLeft] = 0;
+	motor[FrontRight] = 0;
+	motor[MidLeft] = 0;
+	motor[MidRight] = 0;
+	while(SensorValue[Poten1] <= 2700){ //Lift Arm
+		motor[Arm1] = -127;
+		motor[Arm2] = -127;
+		motor[Arm12] = -127;
+		motor[Arm22] = -127;
+	}
+	motor[Arm1] = -20;//Stop arm
+	motor[Arm2] = -20;
+	motor[Arm12] = -20;
+	motor[Arm22] = -20;
+	while((SensorValue[AutonL] - autonMoveL >= -800 || SensorValue[AutonR] - autonMoveR >= -800)){//Back up to fence
+		motor[BackLeft] = -100;
+		motor[BackRight] = -100;
+		motor[FrontLeft] = -100;
+		motor[MidLeft] = -100;
+		motor[MidRight] = -100;
+		motor[FrontRight] = -100;
+	}
+	motor[BackLeft] = 0;
+	motor[BackRight] = 0;
+	motor[FrontLeft] = 0;
+	motor[FrontRight] = 0;
+	motor[MidLeft] = 0;
+	motor[MidRight] = 0;
+	while(SensorValue[LiftLimit ] == 0){ //Lift Arm to knock
+		motor[Arm1] = -127;
+		motor[Arm2] = -127;
+		motor[Arm12] = -127;
+		motor[Arm22] = -127;
+	}
+	motor[Arm1] = 0;
+	motor[Arm2] = 0;
+	motor[Arm12] = 0;
+	motor[Arm22] = 0;
+	wait1Msec(150);
+	while(SensorValue[Poten1] >= 3600){ //Lower Arm
+		motor[Arm1] = 127;
+		motor[Arm2] = 127;
+		motor[Arm12] = 127;
+		motor[Arm22] = 127;
+	}
+	motor[Arm1] = 0;
+	motor[Arm2] = 0;
+	motor[Arm12] = 0;
+	motor[Arm22] = 0;
+	autonMoveL = SensorValue[AutonL]; //reset encoder values
+	autonMoveR = SensorValue[AutonR];
+	while((SensorValue[AutonL] - autonMoveL <= 1250 || SensorValue[AutonR] - autonMoveR <= 1250)){//Grab 1st field cube
+		motor[BackLeft] = 127;
+		motor[BackRight] = 127;
+		motor[FrontLeft] = 127;
+		motor[MidLeft] = 127;
+		motor[MidRight] = 127;
+		motor[FrontRight] = 127;
+	}
+	turn(-870);
+	autonMoveL = SensorValue[AutonL]; //reset encoder values
+	autonMoveR = SensorValue[AutonR];
+	while((SensorValue[AutonL] - autonMoveL >= -120 || SensorValue[AutonR] - autonMoveR >= -120)){//Get off fence
+		motor[BackLeft] = -100;
+		motor[BackRight] = -100;
+		motor[FrontLeft] = -100;
+		motor[MidLeft] = -100;
+		motor[MidRight] = -100;
+		motor[FrontRight] = -100;
+	}
+	motor[BackLeft] = 0;
+	motor[BackRight] = 0;
+	motor[FrontLeft] = 0;
+	motor[FrontRight] = 0;
+	motor[MidLeft] = 0;
+	motor[MidRight] = 0;
+	while(SensorValue[Poten1] >= 2000){ //Lower Arm
+		motor[Arm1] = 127;
+		motor[Arm2] = 127;
+		motor[Arm12] = 127;
+		motor[Arm22] = 127;
+	}
+	motor[Arm1] = 0;
+	motor[Arm2] = 0;
+	motor[Arm12] = 0;
+	motor[Arm22] = 0;
+	while((SensorValue[AutonL] - autonMoveL <= 2500 || SensorValue[AutonR] - autonMoveR <= 2500)){//Grab 1st field cube
+		motor[BackLeft] = 116;
+		motor[BackRight] = 127;
+		motor[FrontLeft] = 116;
+		motor[MidLeft] = 116;
+		motor[MidRight] = 127;
+		motor[FrontRight] = 127;
+	}
+	autonMoveL = SensorValue[AutonL]; //reset encoder values
+	autonMoveR = SensorValue[AutonR];
+	while((SensorValue[AutonL] - autonMoveL >= -50 || SensorValue[AutonR] - autonMoveR >= -50)){//Get off fence
+		motor[BackLeft] = -80;
+		motor[BackRight] = -80;
+		motor[FrontLeft] = -80;
+		motor[MidLeft] = -80;
+		motor[MidRight] = -80;
+		motor[FrontRight] = -80;
+	}
+	motor[BackLeft] = 0;
+	motor[BackRight] = 0;
+	motor[FrontLeft] = 0;
+	motor[FrontRight] = 0;
+	motor[MidLeft] = 0;
+	motor[MidRight] = 0;
+	while(SensorValue[Poten1] <= 2500){ //Lift Arm
+		motor[Arm1] = -127;
+		motor[Arm2] = -127;
+		motor[Arm12] = -127;
+		motor[Arm22] = -127;
+	}
+	motor[Arm1] = -30;//Stop arm
+	motor[Arm2] = -30;
+	motor[Arm12] = -30;
+	motor[Arm22] = -30;
+	turn(850);
+	autonMoveL = SensorValue[AutonL]; //reset encoder values
+	autonMoveR = SensorValue[AutonR];
+	while((SensorValue[AutonL] - autonMoveL >= -1500 || SensorValue[AutonR] - autonMoveR >= -1500)){//Get off fence
+		motor[BackLeft] = -127;
+		motor[BackRight] = -127;
+		motor[FrontLeft] = -127;
+		motor[MidLeft] = -127;
+		motor[MidRight] = -127;
+		motor[FrontRight] = -127;
+	}
+	motor[BackLeft] = 0;
+		motor[BackRight] =  0;
+		motor[FrontLeft] =  0;
+		motor[MidLeft] =  0;
+		motor[MidRight] =  0;
+		motor[FrontRight] =  0;
+	while(SensorValue[LiftLimit ] == 0){ //Lift Arm to knock
+		motor[Arm1] = -127;
+		motor[Arm2] = -127;
+		motor[Arm12] = -127;
+		motor[Arm22] = -127;
+	}
+	motor[Arm1] = 0;
+	motor[Arm2] = 0;
+	motor[Arm12] = 0;
+	motor[Arm22] = 0;
+	wait1Msec(150);
+	while(SensorValue[Poten1] >= 2000){ //Lower Arm
+		motor[Arm1] = 127;
+		motor[Arm2] = 127;
+		motor[Arm12] = 127;
+		motor[Arm22] = 127;
+	}
+	motor[Arm1] = 0;
+	motor[Arm2] = 0;
+	motor[Arm12] = 0;
+	motor[Arm22] = 0;
+	autonMoveL = SensorValue[AutonL]; //reset encoder values
+	autonMoveR = SensorValue[AutonR];
+	while((SensorValue[AutonL] - autonMoveL <= 70 || SensorValue[AutonR] - autonMoveR <= 70)){//Grab 1st field cube
+		motor[BackLeft] = 127;
+		motor[BackRight] = 127;
+		motor[FrontLeft] = 127;
+		motor[MidLeft] = 127;
+		motor[MidRight] = 127;
+		motor[FrontRight] = 127;
+	}
+	turn(650);
+
+	motor[BackLeft] = 0;
+	motor[BackRight] = 0;
+	motor[FrontLeft] = 0;
+	motor[FrontRight] = 0;
+	motor[MidLeft] = 0;
+	motor[MidRight] = 0;
+	motor[Arm1] = 0;
+	motor[Arm2] = 0;
+	motor[Arm12] = 0;
+	motor[Arm22] = 0;
 }
 
 task autonomous(){

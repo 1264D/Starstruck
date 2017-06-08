@@ -140,7 +140,7 @@ void Lift(){
 		}
 		else if(vexRT[Btn8R] == 1){ //Btn8R brings lift down
 			LiftAngle = 1820;
-			AngleToggle = true;
+			AngleToggle = true;f
 		}
 	}
 	AngleCorrect();
